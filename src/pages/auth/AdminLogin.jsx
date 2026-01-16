@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { motion } from "framer-motion";
 import {
   Mail,
@@ -11,7 +10,8 @@ import {
   Shield,
   GraduationCap,
 } from "lucide-react";
-import { adminLogin, clearError } from "../../store/slices/authSlice";
+import { authService } from "../../services/authService";
+import { setToken } from "../../utils/auth";
 
 const AdminLogin = () => {
   const [formData, setFormData] = useState({
@@ -19,22 +19,38 @@ const AdminLogin = () => {
     password: "",
   });
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const dispatch = useDispatch();
   const navigate = useNavigate();
-  const { isLoading, error } = useSelector((state) => state.auth);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
-    if (error) dispatch(clearError());
+    if (error) setError(null);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const result = await dispatch(adminLogin(formData));
-    if (adminLogin.fulfilled.match(result)) {
-      navigate("/admin");
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await authService.adminLogin(formData);
+      console.log("Login response:", response);
+
+      if (response.success && response.token) {
+        setToken(response.token);
+        console.log("Token saved, navigating to /admin");
+        navigate("/admin");
+      } else {
+        setError(response.message || "Login failed");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      setError(err.message || "Login failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 

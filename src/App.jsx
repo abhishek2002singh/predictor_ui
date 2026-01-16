@@ -1,13 +1,12 @@
 import { Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
-import { Login, Signup, AdminLogin } from "./pages/auth";
-import { PrivateRoute, PublicRoute } from "./components/common";
-import {
-  AdminLayout,
-  AdminDashboard,
-  AdminUsers,
-} from "./components/admin";
+import AdminLogin from "./pages/auth/AdminLogin";
+import PrivateRoute from "./components/common/PrivateRoute";
+import PublicRoute from "./components/common/PublicRoute";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./components/admin/AdminDashboard";
+import AdminUsers from "./components/admin/AdminUsers";
 
 function App() {
   return (
@@ -18,22 +17,6 @@ function App() {
       </Route>
 
       {/* Auth routes (no layout) */}
-      <Route
-        path="/login"
-        element={
-          <PublicRoute>
-            <Login />
-          </PublicRoute>
-        }
-      />
-      <Route
-        path="/signup"
-        element={
-          <PublicRoute>
-            <Signup />
-          </PublicRoute>
-        }
-      />
       <Route
         path="/admin/login"
         element={

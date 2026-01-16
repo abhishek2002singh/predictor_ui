@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   GraduationCap,
@@ -12,13 +11,12 @@ import {
   Settings,
   LayoutDashboard,
 } from "lucide-react";
-import { logout } from "../../store/slices/authSlice";
-import { isTokenValid } from "../../utils/auth";
+import { isTokenValid, removeToken } from "../../utils/auth";
 
 const navLinks = [
   { name: "Home", href: "/" },
-  { name: "Features", href: "/#features" },
   { name: "Predictor", href: "/#predictor" },
+  { name: "Features", href: "/#features" },
   { name: "About", href: "/#about" },
 ];
 
@@ -28,12 +26,10 @@ const Navbar = () => {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
 
-  const { user } = useSelector((state) => state.auth);
   const { valid, user: tokenUser } = isTokenValid();
   const isAuthenticated = valid;
-  const currentUser = user || tokenUser;
+  const currentUser = tokenUser;
 
   useEffect(() => {
     const handleScroll = () => {
@@ -60,7 +56,7 @@ const Navbar = () => {
   };
 
   const handleLogout = () => {
-    dispatch(logout());
+    removeToken();
     navigate("/");
     setUserMenuOpen(false);
   };
@@ -194,18 +190,10 @@ const Navbar = () => {
               <div className="flex items-center gap-3 ml-4">
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Link
-                    to="/login"
-                    className="px-5 py-2.5 text-gray-700 font-medium hover:text-gray-900 transition-colors"
-                  >
-                    Login
-                  </Link>
-                </motion.div>
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link
                     to="/signup"
                     className="inline-flex items-center gap-2 bg-linear-to-r from-blue-600 to-violet-600 text-white px-6 py-2.5 rounded-full font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all"
                   >
-                    Sign Up
+                    Get Started
                     <ChevronRight className="h-4 w-4" />
                   </Link>
                 </motion.div>
@@ -286,20 +274,12 @@ const Navbar = () => {
                     </button>
                   </>
                 ) : (
-                  <>
-                    <Link
-                      to="/login"
-                      className="block px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 rounded-lg font-medium transition"
-                    >
-                      Login
-                    </Link>
-                    <Link
-                      to="/signup"
-                      className="block w-full text-center bg-linear-to-r from-blue-600 to-violet-600 text-white px-6 py-3 rounded-xl font-semibold"
-                    >
-                      Sign Up
-                    </Link>
-                  </>
+                  <Link
+                    to="/signup"
+                    className="block w-full text-center bg-linear-to-r from-blue-600 to-violet-600 text-white px-6 py-3 rounded-xl font-semibold"
+                  >
+                    Get Started
+                  </Link>
                 )}
               </div>
             </div>

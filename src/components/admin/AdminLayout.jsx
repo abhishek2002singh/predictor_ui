@@ -1,19 +1,23 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard,
   Users,
-  Settings,
   LogOut,
   Menu,
   X,
-  GraduationCap,
+  Shield,
   ChevronRight,
   Bell,
+  MessageSquare,
+  Briefcase,
+  FileText,
+  BarChart3,
+  UserCog,
+  Settings,
 } from "lucide-react";
-import { logout } from "../../store/slices/authSlice";
+import { isTokenValid, removeToken } from "../../utils/auth";
 
 const sidebarLinks = [
   {
@@ -22,9 +26,44 @@ const sidebarLinks = [
     icon: LayoutDashboard,
   },
   {
-    name: "Users",
-    href: "/admin/users",
+    name: "Assistance",
+    href: "/admin/assistance",
     icon: Users,
+  },
+  {
+    name: "Publisher",
+    href: "/admin/publisher",
+    icon: FileText,
+  },
+  {
+    name: "Job Alert",
+    href: "/admin/job-alert",
+    icon: Briefcase,
+  },
+  {
+    name: "Results",
+    href: "/admin/results",
+    icon: BarChart3,
+  },
+  {
+    name: "Cyber Management",
+    href: "/admin/cyber-management",
+    icon: Shield,
+  },
+  {
+    name: "Analytics",
+    href: "/admin/analytics",
+    icon: BarChart3,
+  },
+  {
+    name: "User Management",
+    href: "/admin/users",
+    icon: UserCog,
+  },
+  {
+    name: "Messages",
+    href: "/admin/messages",
+    icon: MessageSquare,
   },
   {
     name: "Settings",
@@ -35,18 +74,26 @@ const sidebarLinks = [
 
 const AdminLayout = () => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [user, setUser] = useState(null);
   const location = useLocation();
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const { user } = useSelector((state) => state.auth);
+
+  useEffect(() => {
+    const { valid, user: tokenUser } = isTokenValid();
+    if (valid) {
+      setUser(tokenUser);
+    } else {
+      navigate("/admin/login");
+    }
+  }, [navigate]);
 
   const handleLogout = () => {
-    dispatch(logout());
+    removeToken();
     navigate("/admin/login");
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-50">
       {/* Mobile sidebar overlay */}
       <AnimatePresence>
         {sidebarOpen && (
@@ -62,28 +109,31 @@ const AdminLayout = () => {
 
       {/* Sidebar */}
       <aside
-        className={`fixed top-0 left-0 z-50 h-full w-64 bg-gray-900 transform transition-transform duration-300 lg:translate-x-0 ${
+        className={`fixed top-0 left-0 z-50 h-full w-64 bg-gradient-to-b from-indigo-900 via-purple-900 to-indigo-900 transform transition-transform duration-300 lg:translate-x-0 ${
           sidebarOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
         {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-4 border-b border-gray-800">
+        <div className="flex items-center justify-between h-20 px-6 border-b border-white/10">
           <Link to="/admin" className="flex items-center gap-3">
-            <div className="bg-linear-to-br from-blue-600 to-violet-600 p-2 rounded-lg">
-              <GraduationCap className="h-6 w-6 text-white" />
+            <div className="bg-white/10 backdrop-blur-sm p-2.5 rounded-xl border border-white/20">
+              <Shield className="h-7 w-7 text-white" />
             </div>
-            <span className="text-lg font-bold text-white">Admin Panel</span>
+            <div>
+              <h1 className="text-lg font-bold text-white">AdminPanel</h1>
+              <p className="text-xs text-purple-200">Management System</p>
+            </div>
           </Link>
           <button
             onClick={() => setSidebarOpen(false)}
-            className="lg:hidden text-gray-400 hover:text-white"
+            className="lg:hidden text-white/70 hover:text-white"
           >
             <X className="h-6 w-6" />
           </button>
         </div>
 
         {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className="px-4 py-6 space-y-1 overflow-y-auto h-[calc(100vh-160px)]">
           {sidebarLinks.map((link) => {
             const isActive = location.pathname === link.href;
             return (
@@ -91,28 +141,28 @@ const AdminLayout = () => {
                 key={link.name}
                 to={link.href}
                 onClick={() => setSidebarOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-medium transition-all group ${
                   isActive
-                    ? "bg-blue-600 text-white"
-                    : "text-gray-400 hover:bg-gray-800 hover:text-white"
+                    ? "bg-white text-indigo-900 shadow-lg"
+                    : "text-white/80 hover:bg-white/10 hover:text-white"
                 }`}
               >
-                <link.icon className="h-5 w-5" />
-                {link.name}
-                {isActive && <ChevronRight className="h-4 w-4 ml-auto" />}
+                <link.icon className={`h-5 w-5 ${isActive ? "text-indigo-900" : "text-white/80 group-hover:text-white"}`} />
+                <span className="flex-1">{link.name}</span>
+                {isActive && <ChevronRight className="h-4 w-4" />}
               </Link>
             );
           })}
         </nav>
 
         {/* Logout Button */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-800">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-white/10 bg-gradient-to-t from-black/20">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-red-400 hover:bg-red-500/10 transition-all"
+            className="flex items-center gap-3 w-full px-4 py-3 rounded-xl text-sm font-medium text-white bg-red-500/20 hover:bg-red-500/30 transition-all border border-red-400/30"
           >
             <LogOut className="h-5 w-5" />
-            Logout
+            <span>Logout</span>
           </button>
         </div>
       </aside>
@@ -143,13 +193,13 @@ const AdminLayout = () => {
 
               {/* User info */}
               <div className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-linear-to-br from-blue-600 to-violet-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                  {user?.firstName?.[0]}
-                  {user?.lastName?.[0]}
+                <div className="w-9 h-9 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                  {user?.firstName?.[0] || "A"}
+                  {user?.lastName?.[0] || "D"}
                 </div>
                 <div className="hidden sm:block">
                   <p className="text-sm font-medium text-gray-900">
-                    {user?.firstName} {user?.lastName}
+                    {user?.firstName || "Admin"} {user?.lastName || "User"}
                   </p>
                   <p className="text-xs text-gray-500">Administrator</p>
                 </div>

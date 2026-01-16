@@ -1,11 +1,15 @@
-import { Hero, Features, Predictor, About } from "../components/home";
+import Hero from "../components/home/Hero";
+import Features from "../components/home/Features";
+import Predictor from "../components/home/Predictor";
+import About from "../components/home/About";
 
 const Home = () => {
   return (
     <>
       <Hero />
-      <Features />
       <Predictor />
+      <Features />
+      
       <About />
     </>
   );
