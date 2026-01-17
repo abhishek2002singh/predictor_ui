@@ -4,9 +4,9 @@ import Home from "./pages/Home";
 import AdminLogin from "./pages/auth/AdminLogin";
 import PrivateRoute from "./components/common/PrivateRoute";
 import PublicRoute from "./components/common/PublicRoute";
-import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboard from "./components/admin/AdminDashboard";
-import AdminUsers from "./components/admin/AdminUsers";
+import AdminLayout from "./components/adminManagement/AdminLayout";
+import AdminDashboard from "./components/adminManagement/AdminDashboard";
+import AdminUsers from "./components/adminManagement/AdminUsers";
 
 function App() {
   return (

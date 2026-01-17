@@ -21,19 +21,13 @@ const API_ROUTES = {
 
   // User Data Routes
   USER_DATA: {
-    CREATE: "/api/userdata",
-    GET_ALL: "/api/userdata",
-    GET_BY_ID: (id) => `/api/userdata/${id}`,
-    UPDATE: (id) => `/api/userdata/${id}`,
-    DELETE: (id) => `/api/userdata/${id}`,
+    CREATE: "/api/create",
+    GET_ALL: "/api/getAllUser",
+    // GET_BY_ID: (id) => `/api/userdata/${id}`,
+    // UPDATE: (id) => `/api/userdata/${id}`,
+    // DELETE: (id) => `/api/userdata/${id}`,
   },
 
-  // College Predictor Routes (if needed in future)
-  PREDICTOR: {
-    PREDICT: "/api/predictor/predict",
-    GET_COLLEGES: "/api/predictor/colleges",
-    GET_COLLEGE_BY_ID: (id) => `/api/predictor/colleges/${id}`,
-  },
 };
 
 export default API_ROUTES;

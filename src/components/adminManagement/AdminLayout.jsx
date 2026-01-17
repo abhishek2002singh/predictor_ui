@@ -31,18 +31,18 @@ const sidebarLinks = [
     icon: Users,
   },
   {
-    name: "Publisher",
-    href: "/admin/publisher",
+    name: "All Admin",
+    href: "/admin/AllAdmin",
     icon: FileText,
   },
   {
-    name: "Job Alert",
-    href: "/admin/job-alert",
+    name: "Users",
+    href: "/admin/users",
     icon: Briefcase,
   },
   {
-    name: "Results",
-    href: "/admin/results",
+    name: "Upload Data",
+    href: "/admin/UploadData",
     icon: BarChart3,
   },
   {

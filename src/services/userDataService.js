@@ -17,22 +17,22 @@ export const userDataService = {
   },
 
   // Get single user data by ID
-  getUserData: async (id) => {
-    const response = await apiClient.get(API_ROUTES.USER_DATA.GET_BY_ID(id));
-    return response;
-  },
+  // getUserData: async (id) => {
+  //   const response = await apiClient.get(API_ROUTES.USER_DATA.GET_BY_ID(id));
+  //   return response;
+  // },
 
-  // Update user data by ID
-  updateUserData: async (id, userData) => {
-    const response = await apiClient.put(API_ROUTES.USER_DATA.UPDATE(id), userData);
-    return response;
-  },
+  // // Update user data by ID
+  // updateUserData: async (id, userData) => {
+  //   const response = await apiClient.put(API_ROUTES.USER_DATA.UPDATE(id), userData);
+  //   return response;
+  // },
 
-  // Delete user data by ID
-  deleteUserData: async (id) => {
-    const response = await apiClient.delete(API_ROUTES.USER_DATA.DELETE(id));
-    return response;
-  },
+  // // Delete user data by ID
+  // deleteUserData: async (id) => {
+  //   const response = await apiClient.delete(API_ROUTES.USER_DATA.DELETE(id));
+  //   return response;
+  // },
 };
 
 export default userDataService;
