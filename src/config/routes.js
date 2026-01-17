@@ -6,6 +6,7 @@ const API_ROUTES = {
     LOGIN: "/api/auth/login",
     ADMIN_LOGIN: "/api/auth/admin/login",
     ADMIN_SIGNUP: "/api/auth/admin/signup",
+    ASSISTANT_LOGIN: "/api/auth/assistant/login",
     GET_PROFILE: "/api/auth/me",
     UPDATE_PROFILE: "/api/auth/profile",
   },
@@ -23,11 +24,18 @@ const API_ROUTES = {
   USER_DATA: {
     CREATE: "/api/create",
     GET_ALL: "/api/getAllUser",
-    // GET_BY_ID: (id) => `/api/userdata/${id}`,
-    // UPDATE: (id) => `/api/userdata/${id}`,
-    // DELETE: (id) => `/api/userdata/${id}`,
   },
 
+  // Assistant Routes
+  ASSISTANT: {
+    CREATE: "/api/assistant",
+    GET_ALL: "/api/assistant",
+    GET_BY_ID: (id) => `/api/assistant/${id}`,
+    UPDATE_PERMISSIONS: (id) => `/api/assistant/${id}/permissions`,
+    UPDATE_STATUS: (id) => `/api/assistant/${id}/status`,
+    DELETE: (id) => `/api/assistant/${id}`,
+    MY_PERMISSIONS: "/api/assistant/my-permissions",
+  },
 };
 
 export default API_ROUTES;

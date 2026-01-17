@@ -2,11 +2,15 @@ import { Routes, Route } from "react-router-dom";
 import Layout from "./components/layout/Layout";
 import Home from "./pages/Home";
 import AdminLogin from "./pages/auth/AdminLogin";
+import AssistantLogin from "./pages/auth/AssistantLogin";
 import PrivateRoute from "./components/common/PrivateRoute";
 import PublicRoute from "./components/common/PublicRoute";
 import AdminLayout from "./components/adminManagement/AdminLayout";
 import AdminDashboard from "./components/adminManagement/AdminDashboard";
 import AdminUsers from "./components/adminManagement/AdminUsers";
+import AssistantManagement from "./components/adminManagement/AssistantManagement";
+import AssistantLayout from "./components/assistantManagement/AssistantLayout";
+import AssistantDashboard from "./components/assistantManagement/AssistantDashboard";
 
 function App() {
   return (
@@ -36,8 +40,31 @@ function App() {
         }
       >
         <Route index element={<AdminDashboard />} />
-        <Route path="users" element={<AdminUsers />} />
+        <Route path="AllAdmin" element={<AdminUsers />} />
+        <Route path="assistants" element={<AssistantManagement />} />
         <Route path="settings" element={<div className="p-4">Settings Page (Coming Soon)</div>} />
+      </Route>
+
+      {/* Assistant login route */}
+      <Route
+        path="/assistant/login"
+        element={
+          <PublicRoute>
+            <AssistantLogin />
+          </PublicRoute>
+        }
+      />
+
+      {/* Assistant routes */}
+      <Route
+        path="/assistant"
+        element={
+          <PrivateRoute requiredRole="ASSISTANCE">
+            <AssistantLayout />
+          </PrivateRoute>
+        }
+      >
+        <Route index element={<AssistantDashboard />} />
       </Route>
     </Routes>
   );

@@ -20,6 +20,12 @@ export const authService = {
     return response;
   },
 
+  // Assistant login
+  assistantLogin: async (credentials) => {
+    const response = await apiClient.post(API_ROUTES.AUTH.ASSISTANT_LOGIN, credentials);
+    return response;
+  },
+
   // Admin signup (restricted)
   adminSignup: async (userData) => {
     const response = await apiClient.post(API_ROUTES.AUTH.ADMIN_SIGNUP, userData);

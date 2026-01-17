@@ -1,30 +1,32 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Search, ChevronDown, Loader2, GraduationCap, Mail, Phone } from "lucide-react";
+import { Search, ChevronDown, Loader2, GraduationCap, Mail, Phone, User } from "lucide-react";
 import { STATES, CATEGORIES, GENDERS } from "../../utils/constants";
+import { userDataService } from "../../services/userDataService";
 
 // Add this to your constants file or define here
 const EXAMS = [
-  { value: "jee_mains", label: "JEE Mains" },
-  { value: "jee_advance", label: "JEE Advance" },
-  { value: "cuet", label: "CUET" },
-  { value: "neet", label: "NEET" },
-  { value: "mht_cet", label: "MHT CET" },
-  { value: "bitsat", label: "BITSAT" },
-  { value: "wbjee", label: "WBJEE" },
-  { value: "comedk", label: "COMEDK" },
-  { value: "other", label: "Other" },
+  { value: "JEE_MAINS", label: "JEE Mains" },
+  { value: "JEE_ADVANCED", label: "JEE Advanced" },
+  { value: "CUET", label: "CUET" },
+  { value: "NEET", label: "NEET" },
+  { value: "MHT_CET", label: "MHT CET" },
+  { value: "BITSAT", label: "BITSAT" },
+  { value: "WBJEE", label: "WBJEE" },
+  { value: "KCET", label: "KCET" },
 ];
 
 const Predictor = () => {
   const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
     rank: "",
-    exam: "",
+    examType: "",
     category: "",
     gender: "",
     homeState: "",
-    mobile: "",
-    email: "",
+    mobileNumber: "",
+    emailId: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const [focusedField, setFocusedField] = useState(null);
@@ -37,17 +39,32 @@ const Predictor = () => {
     e.preventDefault();
     setIsLoading(true);
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-
-    console.log("Form submitted:", formData);
-    setIsLoading(false);
+    try {
+      const response = await userDataService.createUserData(formData);
+      console.log("Form submitted successfully:", response);
+      // Reset form on success
+      setFormData({
+        firstName: "",
+        lastName: "",
+        rank: "",
+        examType: "",
+        category: "",
+        gender: "",
+        homeState: "",
+        mobileNumber: "",
+        emailId: "",
+      });
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isFormValid =
-    formData.rank && formData.exam && formData.category && 
-    formData.gender && formData.homeState && formData.mobile && 
-    formData.email;
+    formData.firstName && formData.lastName && formData.rank &&
+    formData.examType && formData.category && formData.gender &&
+    formData.homeState && formData.mobileNumber && formData.emailId;
 
   return (
     <section
@@ -92,6 +109,67 @@ const Predictor = () => {
         >
           <div className="bg-white rounded-2xl md:rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 p-6 md:p-10">
             <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8">
+              {/* First Name and Last Name Row */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+                {/* First Name Input */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    First Name
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="firstName"
+                      value={formData.firstName}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField("firstName")}
+                      onBlur={() => setFocusedField(null)}
+                      placeholder="Enter your first name"
+                      className={`w-full px-4 py-3 md:py-4 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all ${
+                        focusedField === "firstName"
+                          ? "border-blue-500 bg-white ring-4 ring-blue-500/10"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      required
+                      minLength="2"
+                      maxLength="50"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+
+                {/* Last Name Input */}
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Last Name
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      name="lastName"
+                      value={formData.lastName}
+                      onChange={handleChange}
+                      onFocus={() => setFocusedField("lastName")}
+                      onBlur={() => setFocusedField(null)}
+                      placeholder="Enter your last name"
+                      className={`w-full px-4 py-3 md:py-4 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all ${
+                        focusedField === "lastName"
+                          ? "border-blue-500 bg-white ring-4 ring-blue-500/10"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      required
+                      minLength="2"
+                      maxLength="50"
+                    />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                      <User className="h-5 w-5 text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
               {/* Rank and Exam Row */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                 {/* Rank Input */}
@@ -129,16 +207,16 @@ const Predictor = () => {
                   </label>
                   <div className="relative">
                     <select
-                      name="exam"
-                      value={formData.exam}
+                      name="examType"
+                      value={formData.examType}
                       onChange={handleChange}
-                      onFocus={() => setFocusedField("exam")}
+                      onFocus={() => setFocusedField("examType")}
                       onBlur={() => setFocusedField(null)}
                       className={`w-full px-4 py-3 md:py-4 bg-gray-50 border-2 rounded-xl text-gray-900 outline-none appearance-none cursor-pointer transition-all ${
-                        focusedField === "exam"
+                        focusedField === "examType"
                           ? "border-blue-500 bg-white ring-4 ring-blue-500/10"
                           : "border-gray-200 hover:border-gray-300"
-                      } ${!formData.exam ? "text-gray-400" : ""}`}
+                      } ${!formData.examType ? "text-gray-400" : ""}`}
                       required
                       style={{
                         height: "56px", // Fixed height for consistency
@@ -276,19 +354,19 @@ const Predictor = () => {
                   <div className="relative">
                     <input
                       type="tel"
-                      name="mobile"
-                      value={formData.mobile}
+                      name="mobileNumber"
+                      value={formData.mobileNumber}
                       onChange={handleChange}
-                      onFocus={() => setFocusedField("mobile")}
+                      onFocus={() => setFocusedField("mobileNumber")}
                       onBlur={() => setFocusedField(null)}
                       placeholder="Enter your mobile number"
                       className={`w-full px-4 py-3 md:py-4 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all ${
-                        focusedField === "mobile"
+                        focusedField === "mobileNumber"
                           ? "border-blue-500 bg-white ring-4 ring-blue-500/10"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
                       required
-                      pattern="[0-9]{10}"
+                      pattern="[6-9][0-9]{9}"
                       maxLength="10"
                     />
                     <div className="absolute right-4 top-1/2 -translate-y-1/2">
@@ -305,14 +383,14 @@ const Predictor = () => {
                   <div className="relative">
                     <input
                       type="email"
-                      name="email"
-                      value={formData.email}
+                      name="emailId"
+                      value={formData.emailId}
                       onChange={handleChange}
-                      onFocus={() => setFocusedField("email")}
+                      onFocus={() => setFocusedField("emailId")}
                       onBlur={() => setFocusedField(null)}
                       placeholder="Enter your email"
                       className={`w-full px-4 py-3 md:py-4 bg-gray-50 border-2 rounded-xl text-gray-900 placeholder-gray-400 outline-none transition-all ${
-                        focusedField === "email"
+                        focusedField === "emailId"
                           ? "border-blue-500 bg-white ring-4 ring-blue-500/10"
                           : "border-gray-200 hover:border-gray-300"
                       }`}
