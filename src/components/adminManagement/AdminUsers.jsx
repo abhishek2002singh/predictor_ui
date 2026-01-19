@@ -12,6 +12,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { adminService } from "../../services/adminService";
+import useDebounce from "../../hooks/useDebounce";
 
 const AdminUsers = () => {
   const [users, setUsers] = useState([]);
@@ -25,10 +26,14 @@ const AdminUsers = () => {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [actionMenuOpen, setActionMenuOpen] = useState(null);
+   const debouncedSearch = useDebounce(search, 500);
 
   useEffect(() => {
-    fetchUsers();
-  }, [pagination.page, search, roleFilter]);
+    if (debouncedSearch.length===0 || debouncedSearch.length>=2) {
+      fetchUsers();
+    }
+    
+  }, [pagination.page, debouncedSearch, roleFilter]);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -37,7 +42,7 @@ const AdminUsers = () => {
         page: pagination.page,
         limit: pagination.limit,
       };
-      if (search) params.search = search;
+      if (debouncedSearch) params.search = debouncedSearch;
       if (roleFilter) params.role = roleFilter;
 
       const response = await adminService.getUsers(params);
@@ -80,7 +85,7 @@ const AdminUsers = () => {
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Users</h1>
+          <h1 className="text-2xl font-bold text-gray-900">All Admin</h1>
           <p className="text-gray-500 mt-1">Manage all registered users</p>
         </div>
       </div>

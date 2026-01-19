@@ -19,6 +19,7 @@ import {
   BarChart3,
 } from "lucide-react";
 import assistantService from "../../services/assistantService";
+import useDebounce from "../../hooks/useDebounce";
 
 const AssistantManagement = () => {
   const [assistants, setAssistants] = useState([]);
@@ -35,6 +36,7 @@ const AssistantManagement = () => {
   const [showPermissionModal, setShowPermissionModal] = useState(false);
   const [selectedAssistant, setSelectedAssistant] = useState(null);
   const [formLoading, setFormLoading] = useState(false);
+  const debouncedSearch = useDebounce(search, 500);
   const [error, setError] = useState("");
 
   // Form state for creating assistant
@@ -67,8 +69,12 @@ const AssistantManagement = () => {
   });
 
   useEffect(() => {
-    fetchAssistants();
-  }, [pagination.page, search]);
+    //Industry-Level Tip
+    if (debouncedSearch.length === 0 || debouncedSearch.length >= 2) {
+      fetchAssistants();
+    }
+    
+  }, [pagination.page, debouncedSearch]);
 
   const fetchAssistants = async () => {
     setLoading(true);
@@ -76,7 +82,7 @@ const AssistantManagement = () => {
       const response = await assistantService.getAllAssistants(
         pagination.page,
         pagination.limit,
-        search
+        debouncedSearch
       );
       setAssistants(response.data);
       setPagination((prev) => ({

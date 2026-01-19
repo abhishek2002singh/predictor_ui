@@ -11,9 +11,18 @@ import AdminUsers from "./components/adminManagement/AdminUsers";
 import AssistantManagement from "./components/adminManagement/AssistantManagement";
 import AssistantLayout from "./components/assistantManagement/AssistantLayout";
 import AssistantDashboard from "./components/assistantManagement/AssistantDashboard";
+import useOnlineStatus from "./hooks/useOnlineStatus";
 
 function App() {
+  const isOnline = useOnlineStatus()
   return (
+    <>
+     {/* Offline Banner */}
+      {!isOnline && (
+        <div className="bg-red-500 text-white text-center py-2 text-sm">
+          ⚠️ You are offline. Please check your internet connection.
+        </div>
+      )}
     <Routes>
       {/* Public routes with main layout */}
       <Route element={<Layout />}>
@@ -67,6 +76,7 @@ function App() {
         <Route index element={<AssistantDashboard />} />
       </Route>
     </Routes>
+    </>
   );
 }
 

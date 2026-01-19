@@ -13,7 +13,7 @@ const API_ROUTES = {
 
   // Admin Routes
   ADMIN: {
-    USERS: "/api/admin/users",
+    USERS: "/api/admin/AllAdmin",
     USER_BY_ID: (userId) => `/api/admin/users/${userId}`,
     USER_STATUS: (userId) => `/api/admin/users/${userId}/status`,
     DELETE_USER: (userId) => `/api/admin/users/${userId}`,
