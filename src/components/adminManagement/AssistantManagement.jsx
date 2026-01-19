@@ -17,10 +17,12 @@ import {
   Download,
   LayoutDashboard,
   BarChart3,
+  User,
 } from "lucide-react";
 import assistantService from "../../services/assistantService";
 import useDebounce from "../../hooks/useDebounce";
 import ConfirmationModal from "../../ConfirmationModal/ConfirmationModal";
+import { Link } from "react-router-dom";
 
 const AssistantManagement = () => {
   const [assistants, setAssistants] = useState([]);
@@ -39,7 +41,7 @@ const AssistantManagement = () => {
   const [formLoading, setFormLoading] = useState(false);
   const debouncedSearch = useDebounce(search, 500);
   const [error, setError] = useState("");
-  
+
   const [modalConfig, setModalConfig] = useState({
     isOpen: false,
     type: '',
@@ -208,7 +210,7 @@ const AssistantManagement = () => {
   const confirmStatusToggle = (assistant) => {
     const type = assistant.isActive ? 'deactivate-assistant' : 'activate-assistant';
     const actionText = assistant.isActive ? 'deactivate' : 'activate';
-    
+
     setModalConfig({
       isOpen: true,
       type: type,
@@ -355,9 +357,12 @@ const AssistantManagement = () => {
                               {assistant.lastName?.[0]}
                             </div>
                             <div>
-                              <p className="font-medium text-gray-900">
+                              <Link
+                                to={`/admin/assistants/${assistant._id}`}
+                                className="font-medium text-gray-900 hover:text-blue-600 transition-colors"
+                              >
                                 {assistant.firstName} {assistant.lastName}
-                              </p>
+                              </Link>
                               <p className="text-sm text-gray-500">Assistant</p>
                             </div>
                           </div>
@@ -401,11 +406,10 @@ const AssistantManagement = () => {
                         </td>
                         <td className="px-6 py-4">
                           <span
-                            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${
-                              assistant.isActive
+                            className={`inline-flex px-3 py-1 rounded-full text-xs font-medium ${assistant.isActive
                                 ? "bg-green-100 text-green-700"
                                 : "bg-red-100 text-red-700"
-                            }`}
+                              }`}
                           >
                             {assistant.isActive ? "Active" : "Inactive"}
                           </span>
@@ -457,6 +461,15 @@ const AssistantManagement = () => {
                                   <Trash2 className="h-4 w-4" />
                                   Delete
                                 </button>
+                                <Link to={`/admin/assistants/${assistant._id}`}>
+                                <button
+                                  
+                                  className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50 rounded-sm"
+                                >
+                                  <User className="h-4 w-4" />
+                                  Details
+                                </button>
+                                </Link>
                               </div>
                             )}
                           </div>

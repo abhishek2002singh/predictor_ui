@@ -1,4 +1,4 @@
-
+// config/routes.js - Fix this file
 const API_ROUTES = {
   // Auth Routes
   AUTH: {
@@ -36,6 +36,14 @@ const API_ROUTES = {
     DELETE: (id) => `/api/assistant/${id}`,
     MY_PERMISSIONS: "/api/assistant/my-permissions",
   },
+
+  // Fix the cutoff upload route
+  CUTOFF: {
+    UPLOAD: "/api/cutoff/upload",
+    PREDICTIONS: "/api/cutoff/predictions",
+    FILTER_OPTIONS: "/api/cutoff/filter-options",
+    STATS: "/api/cutoff/stats",
+  }
 };
 
 export default API_ROUTES;
