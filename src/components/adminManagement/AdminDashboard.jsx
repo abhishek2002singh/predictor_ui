@@ -98,6 +98,24 @@ const AdminDashboard = () => {
           icon={TrendingUp}
           color="bg-violet-600"
         />
+         <StatCard
+          title="Total Assistances"
+          value={stats?.totalAssistance || 0}
+          icon={TrendingUp}
+          color="bg-violet-600"
+        />
+        <StatCard
+          title="Active Assistance"
+          value={stats?.activeAssistance || 0}
+          icon={UserCheck}
+          color="bg-green-600"
+        />
+        <StatCard
+          title="Inactive Assistance"
+          value={stats?.inactiveAssistance || 0}
+          icon={UserX}
+          color="bg-red-500"
+        />
       </div>
 
       {/* Charts Section */}

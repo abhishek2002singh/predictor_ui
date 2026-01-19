@@ -28,8 +28,8 @@ const API_ROUTES = {
 
   // Assistant Routes
   ASSISTANT: {
-    CREATE: "/api/assistant",
-    GET_ALL: "/api/assistant",
+    CREATE: "/api/assistant/create",
+    GET_ALL: "/api/assistant/allAssistance",
     GET_BY_ID: (id) => `/api/assistant/${id}`,
     UPDATE_PERMISSIONS: (id) => `/api/assistant/${id}/permissions`,
     UPDATE_STATUS: (id) => `/api/assistant/${id}/status`,

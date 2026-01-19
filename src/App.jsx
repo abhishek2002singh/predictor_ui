@@ -9,8 +9,10 @@ import AdminLayout from "./components/adminManagement/AdminLayout";
 import AdminDashboard from "./components/adminManagement/AdminDashboard";
 import AdminUsers from "./components/adminManagement/AdminUsers";
 import AssistantManagement from "./components/adminManagement/AssistantManagement";
+import AdminUserData from "./components/adminManagement/AdminUserData";
 import AssistantLayout from "./components/assistantManagement/AssistantLayout";
 import AssistantDashboard from "./components/assistantManagement/AssistantDashboard";
+import AssistantUserData from "./components/assistantManagement/AssistantUserData";
 import useOnlineStatus from "./hooks/useOnlineStatus";
 
 function App() {
@@ -51,6 +53,7 @@ function App() {
         <Route index element={<AdminDashboard />} />
         <Route path="AllAdmin" element={<AdminUsers />} />
         <Route path="assistants" element={<AssistantManagement />} />
+        <Route path="users" element={<AdminUserData />} />
         <Route path="settings" element={<div className="p-4">Settings Page (Coming Soon)</div>} />
       </Route>
 
@@ -74,6 +77,7 @@ function App() {
         }
       >
         <Route index element={<AssistantDashboard />} />
+        <Route path="users" element={<AssistantUserData />} />
       </Route>
     </Routes>
     </>
