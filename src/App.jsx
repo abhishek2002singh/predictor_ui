@@ -14,6 +14,7 @@ import AssistantLayout from "./components/assistantManagement/AssistantLayout";
 import AssistantDashboard from "./components/assistantManagement/AssistantDashboard";
 import AssistantUserData from "./components/assistantManagement/AssistantUserData";
 import useOnlineStatus from "./hooks/useOnlineStatus";
+import AssistanceProfile from "./components/adminManagement/AssistanceProfile";
 
 function App() {
   const isOnline = useOnlineStatus()
@@ -78,6 +79,8 @@ function App() {
       >
         <Route index element={<AssistantDashboard />} />
         <Route path="users" element={<AssistantUserData />} />
+        <Route path="assistants/:id" element={<AssistanceProfile />} />
+
       </Route>
     </Routes>
     </>

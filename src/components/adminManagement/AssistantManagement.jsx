@@ -40,6 +40,13 @@ const AssistantManagement = () => {
   const debouncedSearch = useDebounce(search, 500);
   const [error, setError] = useState("");
   
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: '',
+    data: null,
+    onConfirm: null,
+    isLoading: false
+  });
 
   // Form state for creating assistant
   const [createForm, setCreateForm] = useState({
@@ -71,11 +78,9 @@ const AssistantManagement = () => {
   });
 
   useEffect(() => {
-    //Industry-Level Tip
     if (debouncedSearch.length === 0 || debouncedSearch.length >= 2) {
       fetchAssistants();
     }
-    
   }, [pagination.page, debouncedSearch]);
 
   const fetchAssistants = async () => {
@@ -152,6 +157,13 @@ const AssistantManagement = () => {
     try {
       await assistantService.updateStatus(assistantId, !currentStatus);
       fetchAssistants();
+      setModalConfig({
+        isOpen: false,
+        type: '',
+        data: null,
+        onConfirm: null,
+        isLoading: false
+      });
     } catch (error) {
       console.error("Failed to update status:", error);
     }
@@ -159,10 +171,17 @@ const AssistantManagement = () => {
   };
 
   const handleDelete = async (assistantId) => {
-    if (!window.confirm("Are you sure you want to delete this assistant?")) return;
+    setModalConfig(prev => ({ ...prev, isLoading: true }));
     try {
       await assistantService.deleteAssistant(assistantId);
       fetchAssistants();
+      setModalConfig({
+        isOpen: false,
+        type: '',
+        data: null,
+        onConfirm: null,
+        isLoading: false
+      });
     } catch (error) {
       console.error("Failed to delete assistant:", error);
     }
@@ -184,6 +203,58 @@ const AssistantManagement = () => {
     );
     setShowPermissionModal(true);
     setActionMenuOpen(null);
+  };
+
+  const confirmStatusToggle = (assistant) => {
+    const type = assistant.isActive ? 'deactivate-assistant' : 'activate-assistant';
+    const actionText = assistant.isActive ? 'deactivate' : 'activate';
+    
+    setModalConfig({
+      isOpen: true,
+      type: type,
+      data: {
+        name: `${assistant.firstName} ${assistant.lastName}`,
+        email: assistant.emailId,
+        assistantType: 'Assistant'
+      },
+      onConfirm: () => handleStatusToggle(assistant._id, assistant.isActive),
+      isLoading: false
+    });
+    setActionMenuOpen(null);
+  };
+
+  const confirmDeleteAssistant = (assistant) => {
+    setModalConfig({
+      isOpen: true,
+      type: 'delete-assistant',
+      data: {
+        name: `${assistant.firstName} ${assistant.lastName}`,
+        email: assistant.emailId,
+        assistantType: 'Assistant'
+      },
+      onConfirm: () => handleDelete(assistant._id),
+      isLoading: false
+    });
+    setActionMenuOpen(null);
+  };
+
+  const confirmUpdatePermissions = () => {
+    setModalConfig({
+      isOpen: true,
+      type: 'update-permissions',
+      data: selectedAssistant ? {
+        name: `${selectedAssistant.firstName} ${selectedAssistant.lastName}`,
+        email: selectedAssistant.emailId,
+        assistantType: 'Assistant'
+      } : null,
+      onConfirm: () => {
+        // Trigger form submission
+        const submitEvent = new Event('submit', { bubbles: true });
+        document.querySelector('form')?.dispatchEvent(submitEvent);
+        setModalConfig(prev => ({ ...prev, isOpen: false }));
+      },
+      isLoading: false
+    });
   };
 
   const permissionLabels = {
@@ -364,9 +435,7 @@ const AssistantManagement = () => {
                                   Edit Permissions
                                 </button>
                                 <button
-                                  onClick={() =>
-                                    handleStatusToggle(assistant._id, assistant.isActive)
-                                  }
+                                  onClick={() => confirmStatusToggle(assistant)}
                                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                                 >
                                   {assistant.isActive ? (
@@ -382,7 +451,7 @@ const AssistantManagement = () => {
                                   )}
                                 </button>
                                 <button
-                                  onClick={() => handleDelete(assistant._id)}
+                                  onClick={() => confirmDeleteAssistant(assistant)}
                                   className="w-full flex items-center gap-3 px-4 py-2 text-sm text-red-600 hover:bg-red-50"
                                 >
                                   <Trash2 className="h-4 w-4" />
@@ -625,7 +694,7 @@ const AssistantManagement = () => {
               </button>
             </div>
 
-            <form onSubmit={handleUpdatePermissions} className="p-6 space-y-4">
+            <form id="permissionForm" onSubmit={handleUpdatePermissions} className="p-6 space-y-4">
               {error && (
                 <div className="p-3 bg-red-50 text-red-700 rounded-lg text-sm">
                   {error}
@@ -670,7 +739,8 @@ const AssistantManagement = () => {
                   Cancel
                 </button>
                 <button
-                  type="submit"
+                  type="button"
+                  onClick={confirmUpdatePermissions}
                   disabled={formLoading}
                   className="flex-1 px-4 py-2.5 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
                 >
@@ -682,6 +752,16 @@ const AssistantManagement = () => {
           </motion.div>
         </div>
       )}
+
+      {/* Confirmation Modal */}
+      <ConfirmationModal
+        isOpen={modalConfig.isOpen}
+        onClose={() => setModalConfig(prev => ({ ...prev, isOpen: false }))}
+        onConfirm={modalConfig.onConfirm}
+        type={modalConfig.type}
+        data={modalConfig.data}
+        isLoading={modalConfig.isLoading}
+      />
     </div>
   );
 };
