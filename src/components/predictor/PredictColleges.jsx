@@ -530,3 +530,6 @@ const PredictColleges = () => {
 };
 
 export default PredictColleges;
+
+
+
