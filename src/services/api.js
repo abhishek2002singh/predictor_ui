@@ -61,21 +61,30 @@ class ApiClient {
     return this.request(endpoint, { ...options, method: "GET" });
   }
 
-  post(endpoint, data, options = {}) {
-    return this.request(endpoint, {
-      ...options,
-      method: "POST",
-      body: data,
-    });
-  }
+post(endpoint, data, options = {}) {
+  const body = data instanceof FormData 
+    ? data 
+    : JSON.stringify(data); // ✅ Stringify JSON data
+  
+  return this.request(endpoint, {
+    ...options,
+    method: "POST",
+    body: body,
+  });
+}
 
-  put(endpoint, data, options = {}) {
-    return this.request(endpoint, {
-      ...options,
-      method: "PUT",
-      body: data,
-    });
-  }
+// Also fix put method:
+put(endpoint, data, options = {}) {
+  const body = data instanceof FormData 
+    ? data 
+    : JSON.stringify(data); // ✅ Stringify JSON data
+  
+  return this.request(endpoint, {
+    ...options,
+    method: "PUT",
+    body: body,
+  });
+}
 
   delete(endpoint, options = {}) {
     return this.request(endpoint, { ...options, method: "DELETE" });

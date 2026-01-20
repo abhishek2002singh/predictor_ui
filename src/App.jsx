@@ -16,6 +16,7 @@ import AssistantUserData from "./components/assistantManagement/AssistantUserDat
 import useOnlineStatus from "./hooks/useOnlineStatus";
 import AssistanceProfile from "./components/adminManagement/AssistanceProfile";
 import CutoffUpload from "./components/adminManagement/CutoffUpload";
+import PredictColleges from "./components/predictor/PredictColleges";
 
 function App() {
   const isOnline = useOnlineStatus()
@@ -31,6 +32,7 @@ function App() {
       {/* Public routes with main layout */}
       <Route element={<Layout />}>
         <Route path="/" element={<Home />} />
+         <Route path="/predict-colleges" element={<PredictColleges />} />
       </Route>
 
       {/* Auth routes (no layout) */}

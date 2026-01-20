@@ -248,9 +248,8 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
           </div>
           <button
             onClick={() => setShowFilters(!showFilters)}
-            className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg transition-colors ${
-              showFilters ? "bg-blue-50 border-blue-200 text-blue-700" : "border-gray-200 text-gray-700 hover:bg-gray-50"
-            }`}
+            className={`flex items-center gap-2 px-4 py-2.5 border rounded-lg transition-colors ${showFilters ? "bg-blue-50 border-blue-200 text-blue-700" : "border-gray-200 text-gray-700 hover:bg-gray-50"
+              }`}
           >
             <Filter className="h-4 w-4" />
             Filters
@@ -375,7 +374,9 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {user.firstName?.[0]}{user.lastName?.[0]}
+                            {user?.firstName?.[0] && user?.lastName?.[0]
+                              ? `${user.firstName[0].toUpperCase()}${user.lastName[0].toUpperCase()}`
+                              : "NA"}
                           </div>
                           <div>
                             <p className="font-medium text-gray-900">

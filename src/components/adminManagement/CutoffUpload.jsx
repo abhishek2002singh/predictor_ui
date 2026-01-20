@@ -6,8 +6,20 @@ const CutoffUpload = () => {
   const [file, setFile] = useState(null);
   const [year, setYear] = useState(new Date().getFullYear());
   const [round, setRound] = useState(1);
+  const [typeOfExam, setTypeOfExam] = useState('JEE_MAINS'); // Add this state
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
+
+  const EXAMS = [
+    { value: "JEE_MAINS", label: "JEE Mains" },
+    { value: "JEE_ADVANCED", label: "JEE Advanced" },
+    { value: "CUET", label: "CUET" },
+    { value: "NEET", label: "NEET" },
+    { value: "MHT_CET", label: "MHT CET" },
+    { value: "BITSAT", label: "BITSAT" },
+    { value: "WBJEE", label: "WBJEE" },
+    { value: "KCET", label: "KCET" },
+  ];
 
   const handleFileChange = (e) => {
     const selectedFile = e.target.files[0];
@@ -41,10 +53,17 @@ const CutoffUpload = () => {
       return;
     }
 
+    // Validate required fields
+    if (!typeOfExam) {
+      toast.error('Please select an exam type');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('csvfile', file);
     formData.append('year', year);
     formData.append('round', round);
+    formData.append('typeOfExam', typeOfExam); // Add this
 
     setLoading(true);
     setProgress(0);
@@ -73,6 +92,23 @@ const CutoffUpload = () => {
       <h2 className="text-2xl font-bold mb-6">Upload Cutoff Data</h2>
       
       <div className="space-y-4">
+        {/* Add Exam Type dropdown */}
+        <div>
+          <label className="block text-sm font-medium mb-2">Exam Type</label>
+          <select
+            value={typeOfExam}
+            onChange={(e) => setTypeOfExam(e.target.value)}
+            className="w-full p-2 border rounded"
+          >
+            <option value="">Select Exam Type</option>
+            {EXAMS.map(exam => (
+              <option key={exam.value} value={exam.value}>
+                {exam.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div>
           <label className="block text-sm font-medium mb-2">Academic Year</label>
           <input
@@ -157,7 +193,7 @@ const CutoffUpload = () => {
 
         <button
           onClick={handleUpload}
-          disabled={loading || !file}
+          disabled={loading || !file || !typeOfExam}
           className="w-full bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center justify-center"
         >
           {loading ? (
@@ -173,14 +209,18 @@ const CutoffUpload = () => {
           )}
         </button>
 
-        {/* Upload instructions */}
+        {/* Updated instructions */}
         <div className="mt-4 p-3 bg-gray-50 rounded text-sm text-gray-600">
           <p className="font-medium mb-1">CSV Format:</p>
           <ul className="list-disc pl-5 space-y-1">
             <li>Required columns: <code>Institute</code>, <code>Academic Program Name</code>, <code>Seat Type</code>, <code>Gender</code>, <code>Opening Rank</code>, <code>Closing Rank</code></li>
+            <li>Optional columns: <code>Exam Type</code></li>
             <li>First row should contain column headers</li>
-            <li>Example: <code>Indian Institute of Technology Delhi,Computer Science,OPEN,Gender-Neutral,100,500</code></li>
+            <li>Example: <code>Indian Institute of Technology Delhi,Computer Science,OPEN,Gender-Neutral,100,500,JEE_MAINS</code></li>
           </ul>
+          <p className="mt-2 text-xs">
+            <strong>Note:</strong> If Exam Type column is not in CSV, the selected dropdown value will be used.
+          </p>
         </div>
       </div>
     </div>
