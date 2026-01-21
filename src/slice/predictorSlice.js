@@ -30,7 +30,7 @@ export const fetchCutoffs = createAsyncThunk(
       
       // Use apiClient instead of axios
       const response = await apiClient.get(`/api/predictions?${queryParams}`);
-      return response.data;
+      return response;
     } catch (error) {
       console.error("Error fetching cutoffs:", error.response?.data || error.message);
       return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch cutoffs");
