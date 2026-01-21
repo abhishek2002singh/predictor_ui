@@ -2,42 +2,38 @@ import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import apiClient from '../services/api';
 
 // Async thunks
-// export const fetchCutoffs = createAsyncThunk(
-//   'predictor/fetchCutoffs',
-//   async (params, { rejectWithValue }) => {
-//     try {
-//       const response = await apiClient.get('/api/predictions', { params });
-//       return response;
-//     } catch (error) {
-//       return rejectWithValue(error.message);
-//     }
-//   }
-// );
-
 export const fetchCutoffs = createAsyncThunk(
   'predictor/fetchCutoffs',
   async (params, { rejectWithValue }) => {
     try {
-      // Validate required parameters
-      if (!params.rank || !params.category || !params.gender || !params.typeOfExam) {
-        throw new Error('Missing required parameters: rank, category, gender, typeOfExam');
+      const { rank, category, gender, examType, typeOfExam, page = 1, limit = 10 } = params;
+      
+      // Use examType if provided, otherwise use typeOfExam
+      const examTypeToUse = examType || typeOfExam;
+      
+      if (!examTypeToUse) {
+        throw new Error("Exam type is required");
       }
       
-      // Convert params to query string
-      const queryString = new URLSearchParams({
-        rank: params.rank,
-        category: params.category,
-        gender: params.gender,
-        typeOfExam: params.typeOfExam,
-        page: params.page || 1,
-        limit: params.limit || 3
-      }).toString();
+      // Build query parameters
+      const queryParams = new URLSearchParams({
+        rank,
+        category,
+        gender,
+        typeOfExam: examTypeToUse, // Always send as typeOfExam to API
+        page: page.toString(),
+        limit: limit.toString()
+      });
+
+      console.log("Fetching cutoffs with params:", params);
+      console.log("Query string:", queryParams.toString());
       
-      // Use query string in URL
-      const response = await apiClient.get(`/api/predictions?${queryString}`);
-      return response;
+      // Use apiClient instead of axios
+      const response = await apiClient.get(`/api/predictions?${queryParams}`);
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.message);
+      console.error("Error fetching cutoffs:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to fetch cutoffs");
     }
   }
 );
@@ -46,10 +42,12 @@ export const createUserData = createAsyncThunk(
   'predictor/createUserData',
   async (userData, { rejectWithValue }) => {
     try {
+      console.log("Creating user data:", userData);
       const response = await apiClient.post('/api/create', userData);
       return response;
     } catch (error) {
-      return rejectWithValue(error.message);
+      console.error("Error creating user data:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to create user data");
     }
   }
 );
@@ -59,9 +57,10 @@ export const updateUserData = createAsyncThunk(
   async ({ id, userData }, { rejectWithValue }) => {
     try {
       const response = await apiClient.put(`/api/update/${id}`, userData);
-      return response;
+      return response.data;
     } catch (error) {
-      return rejectWithValue(error.message);
+      console.error("Error updating user data:", error.response?.data || error.message);
+      return rejectWithValue(error.response?.data?.message || error.message || "Failed to update user data");
     }
   }
 );
@@ -111,6 +110,9 @@ const predictorSlice = createSlice({
       state.pagination = initialState.pagination;
       state.showMoreForm = false;
       state.formData = initialState.formData;
+    },
+    clearError: (state) => {
+      state.error = null;
     }
   },
   extraReducers: (builder) => {
@@ -122,8 +124,13 @@ const predictorSlice = createSlice({
       })
       .addCase(fetchCutoffs.fulfilled, (state, action) => {
         state.loading = false;
-        state.cutoffs = action.payload.data;
-        state.pagination = action.payload.pagination;
+        state.cutoffs = action.payload.data?.cutoffs || action.payload.data || action.payload || [];
+        state.pagination = action.payload.pagination || {
+          page: 1,
+          limit: state.cutoffs.length,
+          total: state.cutoffs.length,
+          pages: 1
+        };
         if (action.payload.userData) {
           state.userData = action.payload.userData;
         }
@@ -140,7 +147,7 @@ const predictorSlice = createSlice({
       })
       .addCase(createUserData.fulfilled, (state, action) => {
         state.loading = false;
-        state.userData = action.payload.data;
+        state.userData = action.payload.data || action.payload;
       })
       .addCase(createUserData.rejected, (state, action) => {
         state.loading = false;
@@ -154,8 +161,8 @@ const predictorSlice = createSlice({
       })
       .addCase(updateUserData.fulfilled, (state, action) => {
         state.loading = false;
-        if (state.userData && state.userData._id === action.payload.data._id) {
-          state.userData = action.payload.data;
+        if (state.userData && state.userData._id === action.payload.data?._id) {
+          state.userData = { ...state.userData, ...action.payload.data };
         }
         state.showMoreForm = false;
         state.formData = initialState.formData;
@@ -172,7 +179,8 @@ export const {
   setFormData, 
   resetForm, 
   setSelectedCollege,
-  resetPredictor 
+  resetPredictor,
+  clearError
 } = predictorSlice.actions;
 
 export default predictorSlice.reducer;

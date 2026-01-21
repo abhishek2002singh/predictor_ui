@@ -1,5 +1,3 @@
-
-
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,7 +10,7 @@ import {
   Phone 
 } from "lucide-react";
 import { STATES, CATEGORIES, GENDERS } from "../../utils/constants";
-import { createUserData, fetchCutoffs } from "../../slice/predictorSlice";
+import { createUserData } from "../../slice/predictorSlice";
 
 const EXAMS = [
   { value: "JEE_MAINS", label: "JEE Mains" },
@@ -49,35 +47,39 @@ const Predictor = () => {
     }
 
     try {
-      // First, save user data
-      const userResult = await dispatch(createUserData(formData)).unwrap();
+      // Format the data before sending
+      const formattedData = {
+        rank: Number(formData.rank),
+        examType: formData.examType,
+        category: formData.category,
+        gender: formData.gender,
+        homeState: formData.homeState,
+        mobileNumber: formData.mobileNumber,
+      };
+
+      console.log("Submitting user data:", formattedData); // Debug log
+      
+      // Save user data and navigate with the data
+      const userResult = await dispatch(createUserData(formattedData)).unwrap();
+      
+      console.log("User data saved successfully:", userResult); // Debug log
       
       if (userResult.success) {
-        // Then fetch cutoffs with user data
-        const params = {
-          rank: formData.rank,
-          category: formData.category,
-          gender: formData.gender,
-          typeOfExam: formData.examType,
-          page: 1,
-          limit: 3 // Initial limit for first page
-        };
-        
-        const cutoffResult = await dispatch(fetchCutoffs(params)).unwrap();
-        
-        if (cutoffResult.success) {
-          // Navigate to predictions page
-          navigate('/predict-colleges', { 
-            state: { 
-              userData: userResult.data,
-              initialCutoffs: cutoffResult.data 
-            }
-          });
-        }
+        // Navigate to predictions page with form data for API call
+        navigate('/predict-colleges', { 
+          state: { 
+            formData: formattedData
+          }
+        });
       }
     } catch (error) {
       console.error("Form submission error:", error);
-      setFormError(error.message || "Failed to submit form. Please try again.");
+      // Extract error message from different possible error formats
+      const errorMessage = error?.response?.data?.message || 
+                         error?.message || 
+                         error?.data?.message || 
+                         "Failed to submit form. Please try again.";
+      setFormError(errorMessage);
     }
   };
 
@@ -88,6 +90,9 @@ const Predictor = () => {
     formData.gender &&
     formData.homeState && 
     formData.mobileNumber;
+
+  // Rest of your component remains the same...
+  // [Keep all the JSX code exactly as you had it]
 
   return (
     <section
