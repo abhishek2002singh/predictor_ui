@@ -88,7 +88,7 @@ const Navbar = () => {
             </motion.div>
             <div>
               <span className="text-xl font-bold bg-linear-to-r from-blue-600 via-violet-600 to-purple-600 bg-clip-text text-transparent">
-                CollegePredict
+                CollegePredictor
               </span>
               <p className="text-[10px] text-gray-500 font-medium tracking-wide">
                 AI-Powered Admissions
