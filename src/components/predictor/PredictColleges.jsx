@@ -15,7 +15,8 @@ import {
   Check,
   ChevronRight,
   Home,
-  ChevronLeft
+  ChevronLeft,
+  FilterIcon
 } from "lucide-react";
 import { setShowMoreForm, setFormData, updateUserData, fetchCutoffs } from "../../slice/predictorSlice";
 
@@ -86,6 +87,7 @@ const PredictColleges = () => {
   const [formErrors, setFormErrors] = useState({});
   const [initialLoading, setInitialLoading] = useState(true);
   const [apiError, setApiError] = useState("");
+  const [filterpage , setFilterPage] = useState(false)
 
   // Get form data from navigation state
   const { formData: initialFormData } = location.state || {};
@@ -326,12 +328,12 @@ const PredictColleges = () => {
     );
   };
 
-  // Calculate success rate percentage
-  const calculateSuccessRate = () => {
-    if (pagination.total === 0) return '0%';
-    const highChanceCount = cutoffs.filter(c => c.probability === 'High Chance').length;
-    return `${Math.round((highChanceCount / pagination.total) * 100)}%`;
-  };
+  // // Calculate success rate percentage
+  // const calculateSuccessRate = () => {
+  //   if (pagination.total === 0) return '0%';
+  //   const highChanceCount = cutoffs.filter(c => c.probability === 'High Chance').length;
+  //   return `${Math.round((highChanceCount / pagination.total) * 100)}%`;
+  // };
 
   // Get display data for header
   const getDisplayData = () => {
@@ -500,7 +502,7 @@ const PredictColleges = () => {
                     : `Showing  3 of ${summaryStats.totalColleges} colleges`}
                 </p>
               </div>
-              {!showAllColleges && cutoffs.length > 0 && (
+              {!showAllColleges && cutoffs.length > 0 ? (
                 <div className="flex items-center gap-4">
                   <button
                     onClick={handleViewAll}
@@ -512,7 +514,19 @@ const PredictColleges = () => {
                     <ChevronRight className="h-4 w-4" />
                   </button>
                 </div>
-              )}
+              ):
+              <div className="flex items-center gap-4">
+                
+                   <button
+                   
+                    className={`px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-medium rounded-lg hover:shadow-lg transition-all flex items-center gap-2 ${loading ? 'opacity-50 cursor-not-allowed' : ''
+                      }`}
+                  >
+                    filter
+                    <FilterIcon className="h-4 w-4" />
+                  </button>
+              </div>
+              }
             </div>
 
             <div className="border-b border-gray-200 mb-6"></div>
