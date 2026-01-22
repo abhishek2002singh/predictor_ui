@@ -43,6 +43,12 @@ const API_ROUTES = {
     PREDICTIONS: "/api/cutoff/predictions",
     FILTER_OPTIONS: "/api/cutoff/filter-options",
     STATS: "/api/cutoff/stats",
+  },
+  ANALYTICS_ROUTER_PATH: {
+    GET_ALL_ANALYSIS_USER: "/api/analytics/user-analytics",
+    UPLOAD_DATA_ANALYSIS: "/api/analytics/upload-data-analytics",
+    ASSISTANCE_ANALYSIS: "/api/analytics/assistance-analytics",
+    ADMIN_ANALYSIS: "/api/analytics/admin-analytics"
   }
 };
 
