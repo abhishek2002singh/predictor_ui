@@ -24,12 +24,16 @@ export const userDataService = {
 
   // Update user data by ID
 updateUserData: async (id, userData) => {
-  console.log("Sending update data:", userData); // Add this
-  console.log("User ID:", id); // Add this
-  const url = API_ROUTES.USER_DATA.UPDATE_USER_BY_ADMIN_ASSISTANCE(id);
+  const url = API_ROUTES?.USER_DATA?.UPDATE_USER_BY_ADMIN_ASSISTANCE(id);
   const response = await apiClient.put(url, userData);
-  console.log("Response from server:", response); // Add this
+
   return response;
+},
+
+exportUserData: async()=>{
+  const url = API_ROUTES?.USER_DATA?.EXPORT_USER_DATA
+ const response = await apiClient?.get(url)
+ return response;
 }
 
   // // Delete user data by ID
