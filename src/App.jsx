@@ -17,6 +17,9 @@ import useOnlineStatus from "./hooks/useOnlineStatus";
 import AssistanceProfile from "./components/adminManagement/AssistanceProfile";
 import CutoffUpload from "./components/adminManagement/CutoffUpload";
 import PredictColleges from "./components/predictor/PredictColleges";
+import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
+import UserAnalyticsView from "./components/analytics/UserAnalyticsView";
+import UploadAnalysisView from "./components/analytics/UploadAnalysisView";
 
 function App() {
   const isOnline = useOnlineStatus()
@@ -61,6 +64,9 @@ function App() {
         UploadData
          <Route path="assistants/:id" element={<AssistanceProfile />} />
          <Route path="UploadData" element={<CutoffUpload />} />
+         <Route path="analytics" element={<AnalyticsDashboard />} />
+          <Route path="analytics/user" element={<UserAnalyticsView />} />
+          <Route path="analytics/upload" element={<UploadAnalysisView />} />
         <Route path="settings" element={<div className="p-4">Settings Page (Coming Soon)</div>} />
       </Route>
 

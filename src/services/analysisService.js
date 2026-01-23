@@ -7,7 +7,7 @@ export const analyticsService = {
     getUserAnalytics: async () => {
         try {
             const response = await apiClient.get(API_ROUTES.ANALYTICS_ROUTER_PATH.GET_ALL_ANALYSIS_USER);
-            return response.data;
+            return response;
         } catch (error) {
             throw error.response?.data || error.message;
         }
@@ -17,7 +17,7 @@ export const analyticsService = {
     getUploadAnalytics: async () => {
         try {
             const response = await apiClient.get(API_ROUTES.ANALYTICS_ROUTER_PATH.UPLOAD_DATA_ANALYSIS);
-            return response.data;
+            return response;
         } catch (error) {
             throw error.response?.data || error.message;
         }

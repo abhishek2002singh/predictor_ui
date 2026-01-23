@@ -24,6 +24,7 @@ const API_ROUTES = {
   USER_DATA: {
     CREATE: "/api/create",
     GET_ALL: "/api/getAllUser",
+    UPDATE_USER_BY_ADMIN_ASSISTANCE :(id)=>`/api/update/byAdminOrAssistance/${id}`
   },
 
   // Assistant Routes
