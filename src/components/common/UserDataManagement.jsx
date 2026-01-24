@@ -652,6 +652,9 @@ import {
   XCircle,
   FileDown,
   FileText,
+  AlertCircle,
+  Check,
+  Loader2,
 } from "lucide-react";
 import userDataService from "../../services/userDataService";
 
@@ -674,10 +677,14 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
     toDate: "",
     isNegativeResponse: "",
     isPositiveResponse: "",
-    isDataExport: "", // Changed from isExportedData to match backend
+    isDataExport: "",
   });
   const [showFilters, setShowFilters] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [exporting, setExporting] = useState(false);
+  const [exportMessage, setExportMessage] = useState("");
+  const [exportSuccess, setExportSuccess] = useState(false);
+  const [selectedExportExam, setSelectedExportExam] = useState("");
   const limit = 10;
 
   // Check if user has permission to view (admin always has access)
@@ -706,7 +713,7 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
         ...(filters.toDate && { toDate: filters.toDate }),
         ...(filters.isNegativeResponse !== "" && { isNegativeResponse: filters.isNegativeResponse }),
         ...(filters.isPositiveResponse !== "" && { isPositiveResponse: filters.isPositiveResponse }),
-        ...(filters.isDataExport !== "" && { isDataExport: filters.isDataExport }), // Changed to isDataExport
+        ...(filters.isDataExport !== "" && { isDataExport: filters.isDataExport }),
         ...(searchTerm && { search: searchTerm }),
       };
 
@@ -743,7 +750,7 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
       toDate: "",
       isNegativeResponse: "",
       isPositiveResponse: "",
-      isDataExport: "", // Changed
+      isDataExport: "",
     });
     setSearchTerm("");
     setCurrentPage(1);
@@ -751,37 +758,168 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
     setShowFilters(false);
   };
 
-  const handleExport = () => {
-    if (!canExport) return;
+const handleExport = async (examType = "") => {
+  if (!canExport) {
+    alert("You don't have permission to export data");
+    return;
+  }
 
-    // Create CSV content with all fields
+  try {
+    setExporting(true);
+    setExportMessage("");
+    setExportSuccess(false);
+
+    console.log('🔵 Starting export for:', examType || 'ALL exams');
+    
+    // Use the service (cleaner approach)
+    const response = await userDataService.exportUserData(
+      examType === "ALL" ? "" : examType
+    );
+
+    console.log('📥 Service response received:');
+    console.log('- Is CSV?', response.isCsvResponse);
+    console.log('- Is JSON?', response.isJsonResponse);
+    console.log('- Data type:', typeof response.data);
+    console.log('- Is Blob?', response.data instanceof Blob);
+    
+    // Handle CSV response
+    if (response.isCsvResponse || response.data instanceof Blob) {
+      console.log('✅ Processing CSV download...');
+      
+      // Ensure we have a Blob
+      let blobData;
+      if (response.data instanceof Blob) {
+        blobData = response.data;
+      } else {
+        // Convert whatever we have to Blob
+        const data = typeof response.data === 'string' 
+          ? response.data 
+          : JSON.stringify(response.data);
+        blobData = new Blob([data], { type: 'text/csv' });
+      }
+      
+      // Check if blob has data
+      if (blobData.size === 0) {
+        setExportMessage("No data to export");
+        setExportSuccess(false);
+        return;
+      }
+      
+      // Create download link
+      const url = window.URL.createObjectURL(blobData);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Create filename
+      const effectiveExamType = examType === "ALL" || examType === "" ? 'all' : examType;
+      const filename = `user-data-export-${effectiveExamType}-${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = filename;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      // Show success
+      setExportSuccess(true);
+      setExportMessage(`✅ Data exported successfully! ${examType && examType !== "ALL" ? `(${examType})` : '(All exams)'}`);
+      
+      // Refresh user list
+      setTimeout(() => {
+        fetchUsers();
+      }, 1000);
+      
+    } 
+    // Handle JSON response (no data)
+    else if (response.isJsonResponse || (response.data && response.data.message)) {
+      const message = response.data?.message || "No new data to export";
+      console.log('📝 No data message:', message);
+      setExportMessage(message);
+      setExportSuccess(false);
+    }
+    // Fallback: Check if response data is string that looks like CSV
+    else if (typeof response.data === 'string' && response.data.includes('Mobile Number')) {
+      console.log('🔄 Fallback: String contains CSV, converting...');
+      const blob = new Blob([response.data], { type: 'text/csv' });
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `export-${examType || 'all'}-${Date.now()}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      setExportSuccess(true);
+      setExportMessage(`✅ Data exported successfully!`);
+      setTimeout(() => fetchUsers(), 1000);
+    }
+    else {
+      console.error('❌ Unexpected response:', response);
+      setExportMessage("Unexpected response from server");
+      setExportSuccess(false);
+    }
+    
+  } catch (error) {
+    console.error("❌ Export error:", error);
+    setExportMessage(`❌ ${error.message}`);
+    setExportSuccess(false);
+    
+  } finally {
+    setExporting(false);
+    setSelectedExportExam("");
+    
+    // Clear message after 5 seconds
+    setTimeout(() => {
+      setExportMessage("");
+      setExportSuccess(false);
+    }, 5000);
+  }
+};
+
+  const handleLocalExport = () => {
+    if (!canExport) {
+      alert("You don't have permission to export data");
+      return;
+    }
+
+    // Local CSV export as fallback
     const headers = [
-      "Name", "Email", "Mobile", "Total Checks", 
-      "Exams Checked", "Created At", "Updated At",
-      "Negative Response", "Positive Response", "Data Export" // Changed header
+      "Name", "Email", "Mobile", "Exam Type", "Rank", "Category",
+      "Gender", "State", "Checked At", "Total Checks", "Exams Checked",
+      "Created At", "Updated At", "Negative Response", "Positive Response", "Data Export"
     ];
     
     const csvContent = [
       headers.join(","),
-      ...users.map(user => [
-        `"${user.firstName || ''} ${user.lastName || ''}"`,
-        user.emailId || '',
-        user.mobileNumber,
-        user.totalChecks,
-        `"${user.examsChecked?.join(", ") || ""}"`,
-        new Date(user.createdAt).toISOString(),
-        new Date(user.updatedAt).toISOString(),
-        user.isNegativeResponse ? 'Yes' : 'No',
-        user.isPositiveResponse ? 'Yes' : 'No',
-        user.isDataExport ? 'Yes' : 'No', // Changed field
-      ].join(","))
+      ...users.flatMap(user => 
+        user.checkHistory?.map(check => [
+          `"${user.firstName || ''} ${user.lastName || ''}"`,
+          user.emailId || '',
+          user.mobileNumber,
+          check.examType,
+          check.rank || '',
+          check.category || '',
+          check.gender || '',
+          check.homeState || '',
+          new Date(check.checkedAt).toISOString(),
+          user.totalChecks,
+          `"${user.examsChecked?.join(", ") || ""}"`,
+          new Date(user.createdAt).toISOString(),
+          new Date(user.updatedAt).toISOString(),
+          user.isNegativeResponse ? 'Yes' : 'No',
+          user.isPositiveResponse ? 'Yes' : 'No',
+          user.isDataExport ? 'Yes' : 'No',
+        ].join(",")) || []
+      )
     ].join("\n");
 
     const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
-    a.download = `users_data_${new Date().toISOString().split("T")[0]}.csv`;
+    a.download = `local_users_data_${new Date().toISOString().split("T")[0]}.csv`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
@@ -853,6 +991,77 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
 
   return (
     <div className="space-y-6">
+      {/* Export Message */}
+      {exportMessage && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className={`p-4 rounded-lg ${exportSuccess 
+            ? 'bg-green-50 border border-green-200 text-green-700' 
+            : 'bg-yellow-50 border border-yellow-200 text-yellow-700'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {exportSuccess ? (
+              <Check className="h-5 w-5" />
+            ) : (
+              <AlertCircle className="h-5 w-5" />
+            )}
+            <p className="font-medium">{exportMessage}</p>
+          </div>
+        </motion.div>
+      )}
+
+      {/* Export Modal */}
+      {selectedExportExam && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white rounded-2xl max-w-md w-full"
+          >
+            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+              <h2 className="text-lg font-semibold text-gray-900">Export Data</h2>
+              <button
+                onClick={() => setSelectedExportExam("")}
+                className="p-2 hover:bg-gray-100 rounded-lg"
+                disabled={exporting}
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <p className="text-gray-600">
+                Export {selectedExportExam === "ALL" ? "all unexported data" : `unexported ${selectedExportExam} data`}?
+              </p>
+              <div className="flex gap-3 pt-4">
+                <button
+                  onClick={() => setSelectedExportExam("")}
+                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  disabled={exporting}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleExport(selectedExportExam === "ALL" ? "" : selectedExportExam)}
+                  disabled={exporting}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {exporting ? (
+                    <div className="flex items-center justify-center gap-2">
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Exporting...
+                    </div>
+                  ) : (
+                    "Export Data"
+                  )}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
@@ -862,19 +1071,63 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
           </p>
         </div>
         {canExport && (
-          <button
-            onClick={handleExport}
-            className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
-          >
-            <Download className="h-4 w-4" />
-            Export CSV
-          </button>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <button
+              onClick={handleLocalExport}
+              className="flex items-center gap-2 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+              title="Export current view to CSV"
+            >
+              <FileText className="h-4 w-4" />
+              Export Local
+            </button>
+            
+            <div className="relative group">
+              <button
+                disabled={exporting}
+                className="flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {exporting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Exporting...
+                  </>
+                ) : (
+                  <>
+                    <Download className="h-4 w-4" />
+                    Export New Data
+                  </>
+                )}
+              </button>
+              
+              {/* Dropdown for exam-specific export */}
+              <div className="absolute right-0 mt-1 hidden group-hover:block z-10">
+                <div className="bg-white rounded-lg shadow-lg border border-gray-200 py-1 min-w-[200px]">
+                  <button
+                    onClick={() => setSelectedExportExam("ALL")}
+                    className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                  >
+                    All Exams
+                  </button>
+                  <div className="border-t border-gray-100"></div>
+                  {["JEE_MAINS", "JEE_ADVANCED", "CUET", "NEET", "MHT_CET", "KCET", "WBJEE", "BITSAT"].map((exam) => (
+                    <button
+                      key={exam}
+                      onClick={() => setSelectedExportExam(exam)}
+                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                    >
+                      {exam.replace('_', ' ')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
         )}
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -926,9 +1179,29 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
               </div>
             </div>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="bg-white rounded-xl p-5 shadow-sm border border-gray-100"
+          >
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-yellow-50 rounded-xl">
+                <FileDown className="h-6 w-6 text-yellow-600" />
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Pending Export</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {stats.pendingExport || 0}
+                </p>
+              </div>
+            </div>
+          </motion.div>
         </div>
       )}
 
+      {/* Rest of the component remains exactly the same from your original code */}
       {/* Exam Stats */}
       {examStats.length > 0 && (
         <motion.div
@@ -1118,7 +1391,7 @@ const UserDataManagement = ({ permissions, isAdmin = false }) => {
         )}
       </div>
 
-      {/* Users Table */}
+      {/* Users Table - Rest of the table and modals remain exactly as in your original code */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         {loading ? (
           <div className="flex items-center justify-center h-64">
