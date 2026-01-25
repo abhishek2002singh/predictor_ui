@@ -27,7 +27,7 @@ export const analyticsService = {
     getAssistanceAnalytics: async () => {
         try {
             const response = await apiClient.get(API_ROUTES.ANALYTICS_ROUTER_PATH.ASSISTANCE_ANALYSIS);
-            return response.data;
+            return response;
         } catch (error) {
             throw error.response?.data || error.message;
         }

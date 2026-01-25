@@ -50,7 +50,8 @@ const API_ROUTES = {
     GET_ALL_ANALYSIS_USER: "/api/analytics/user-analytics",
     UPLOAD_DATA_ANALYSIS: "/api/analytics/upload-data-analytics",
     ASSISTANCE_ANALYSIS: "/api/analytics/assistance-analytics",
-    ADMIN_ANALYSIS: "/api/analytics/admin-analytics"
+    ADMIN_ANALYSIS: "/api/analytics/admin-analytics",
+    ASSITANCE_ANALYSIS :"/api/analytics/assistance-analytics"
   }
 };
 

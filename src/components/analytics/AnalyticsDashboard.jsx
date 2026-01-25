@@ -60,7 +60,7 @@ const AnalyticsDashboard = () => {
       label: "Assistance Analytics",
       icon: Users2,
       color: "green",
-      link: "/admin/analytics/assistance",
+      link: "/admin/analytics/assistance-analytics",
       data: stats.assistance,
     },
     {

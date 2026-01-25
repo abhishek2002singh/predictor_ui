@@ -20,6 +20,7 @@ import PredictColleges from "./components/predictor/PredictColleges";
 import AnalyticsDashboard from "./components/analytics/AnalyticsDashboard";
 import UserAnalyticsView from "./components/analytics/UserAnalyticsView";
 import UploadAnalysisView from "./components/analytics/UploadAnalysisView";
+import AnalysisAssistance from "./components/analytics/AnalysisAssistance";
 
 function App() {
   const isOnline = useOnlineStatus()
@@ -67,6 +68,7 @@ function App() {
          <Route path="analytics" element={<AnalyticsDashboard />} />
           <Route path="analytics/user" element={<UserAnalyticsView />} />
           <Route path="analytics/upload" element={<UploadAnalysisView />} />
+           <Route path="analytics/assistance-analytics" element={<AnalysisAssistance />} />
         <Route path="settings" element={<div className="p-4">Settings Page (Coming Soon)</div>} />
       </Route>
 
