@@ -1,19 +1,13 @@
 
 
-
-import { Home, School, Search, ChevronDown, Filter, Loader2, AlertCircle } from 'lucide-react'
+import { Home, School, Search, ChevronDown, Filter, AlertCircle } from 'lucide-react'
 import React, { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from "framer-motion";
 import { jeeAllCollege, AllCouncilling } from '../../utils/jeeAllCollege';
-import { useDispatch, useSelector } from 'react-redux';
-import { fetchRankPrediction, clearRankPrediction } from '../../slice/rankPredictionSlice';
-import { toast } from 'react-toastify';
 
 const PredictRank = () => {
     const navigate = useNavigate()
-    const dispatch = useDispatch()
-    const { predictionData, loading, error } = useSelector(state => state.rankPrediction)
     
     const [collegeName, setCollegeName] = useState('')
     const [filteredColleges, setFilteredColleges] = useState([])
@@ -24,9 +18,6 @@ const PredictRank = () => {
     const dropdownRef = useRef(null)
     const inputRef = useRef(null)
 
-    // Check if data exists and has proper structure
-    const hasValidPredictionData = predictionData && predictionData.success && predictionData.result
-    
     useEffect(() => {
         if (collegeName.trim() === '') {
             setFilteredColleges([])
@@ -71,7 +62,6 @@ const PredictRank = () => {
         setSelectedCollege(null)
         setFilteredColleges([])
         setShowDropdown(false)
-        dispatch(clearRankPrediction())
     }
 
     const getCounselingName = (id) => {
@@ -79,39 +69,31 @@ const PredictRank = () => {
         return counseling ? counseling.name : ''
     }
 
-    const handlePredictRank = async () => {
+    const handlePredictRank = () => {
         if (!selectedCollege || !selectedCounseling) {
             toast.error('Please select both college and counseling type')
             return
         }
 
-        const predictionData = {
-            institute: selectedCollege.fullName,
-            CounselingType: selectedCounseling
-        }
-
-        try {
-            await dispatch(fetchRankPrediction(predictionData)).unwrap()
-            toast.success('Rank prediction fetched successfully!')
-        } catch (error) {
-            // Handle different error formats
-            const errorMessage = error?.message || error?.data?.message || error || 'Failed to fetch rank prediction'
-            toast.error(errorMessage)
-        }
+        // Navigate directly without calling API
+        navigate('/rank-prediction-results', {
+            state: {
+                collegeName: selectedCollege.fullName,
+                collegeId: selectedCollege.id,
+                counselingType: selectedCounseling,
+                counselingName: getCounselingName(selectedCounseling),
+                collegeType: selectedCollege.type,
+                collegeShortName: selectedCollege.shortName
+            }
+        })
     }
 
     const getCounselingDetails = (id) => {
         return AllCouncilling.find(c => c.id === id) || null
     }
 
-    // Clear error on component mount
-    useEffect(() => {
-        dispatch(clearRankPrediction())
-    }, [dispatch])
-
     return (
         <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
-            {/* Back Button */}
             <div className="max-w-7xl mx-auto mb-10">
                 <button
                     onClick={() => navigate('/')}
@@ -121,7 +103,6 @@ const PredictRank = () => {
                     Back to Predictor
                 </button>
             
-                {/* Header */}
                 <motion.div initial={{opacity: 0, y: 20}} animate={{opacity: 1, y: 0}} className="mb-12 text-center">
                     <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl shadow-lg mx-auto mb-6 flex items-center justify-center">
                         <School className="h-8 w-8 text-white" />
@@ -130,7 +111,6 @@ const PredictRank = () => {
                     <p className="text-gray-600">Find rank requirements for colleges</p>
                 </motion.div>
 
-                {/* Main Content */}
                 <div className="max-w-4xl mx-auto space-y-8">
                     
                     {/* College Search */}
@@ -160,7 +140,6 @@ const PredictRank = () => {
                                                 setCollegeName(e.target.value)
                                                 setShowDropdown(true)
                                                 setSelectedCollege(null)
-                                                dispatch(clearRankPrediction())
                                             }}
                                             onFocus={() => {
                                                 setShowDropdown(true)
@@ -264,7 +243,6 @@ const PredictRank = () => {
                                             value={selectedCounseling}
                                             onChange={(e) => {
                                                 setSelectedCounseling(e.target.value)
-                                                dispatch(clearRankPrediction())
                                             }}
                                             className="w-full px-5 py-3.5 bg-white border-2 border-gray-200 rounded-xl text-gray-900 outline-none transition-all hover:border-gray-300 focus:border-purple-500 focus:shadow-lg"
                                             disabled={!selectedCollege}
@@ -292,7 +270,6 @@ const PredictRank = () => {
                                             </div>
                                             <button onClick={() => {
                                                 setSelectedCounseling('')
-                                                dispatch(clearRankPrediction())
                                             }} className="text-gray-500 hover:text-gray-700 px-3 py-2 hover:bg-white rounded-lg text-sm border">
                                                 Change
                                             </button>
@@ -319,34 +296,13 @@ const PredictRank = () => {
                                     </motion.div>
                                 )}
 
-                                {/* Error Display */}
-                                {error && (
-                                    <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-red-50 border border-red-200 rounded-xl p-4">
-                                        <div className="flex items-center gap-3">
-                                            <AlertCircle className="h-5 w-5 text-red-500" />
-                                            <div>
-                                                <h4 className="font-medium text-red-700">Error</h4>
-                                                <p className="text-sm text-red-600">{typeof error === 'object' ? JSON.stringify(error) : error}</p>
-                                            </div>
-                                        </div>
-                                    </motion.div>
-                                )}
-
                                 {selectedCollege && selectedCounseling && (
                                     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="pt-6 border-t">
                                         <button 
                                             onClick={handlePredictRank}
-                                            disabled={loading}
-                                            className={`w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 shadow-lg flex items-center justify-center gap-2 ${loading ? 'opacity-80 cursor-not-allowed' : ''}`}
+                                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-bold py-4 px-6 rounded-xl transition-all hover:-translate-y-0.5 hover:shadow-xl active:translate-y-0 shadow-lg flex items-center justify-center gap-2"
                                         >
-                                            {loading ? (
-                                                <>
-                                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                                    Predicting...
-                                                </>
-                                            ) : (
-                                                'Predict Required Rank'
-                                            )}
+                                            Predict Required Rank
                                         </button>
                                         <p className="text-center text-sm text-gray-500 mt-3">Get predictions based on historical data</p>
                                     </motion.div>
@@ -354,118 +310,6 @@ const PredictRank = () => {
                             </div>
                         </div>
                     </motion.div>
-
-                    {/* Results Display - FIXED */}
-                    {hasValidPredictionData && (
-                        <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="bg-white rounded-2xl shadow-lg border overflow-hidden">
-                            <div className="p-6 border-b bg-gradient-to-r from-green-50 to-emerald-50">
-                                <div className="flex items-center gap-3">
-                                    <div className="p-2 bg-green-500 rounded-lg">
-                                        <School className="h-5 w-5 text-white" />
-                                    </div>
-                                    <div>
-                                        <h2 className="text-xl font-bold text-gray-900">Prediction Results</h2>
-                                        <p className="text-sm text-gray-500">Based on historical cutoff data</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div className="p-6">
-                                <div className="space-y-6">
-                                    {/* Summary */}
-                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div className="bg-blue-50 p-4 rounded-xl border border-blue-200">
-                                            <div className="text-2xl font-bold text-blue-700">
-                                                {predictionData.result?.rankRange?.bestOpeningRank?.toLocaleString() || 'N/A'}
-                                            </div>
-                                            <div className="text-sm text-blue-600 mt-1">Best Opening Rank</div>
-                                        </div>
-                                        <div className="bg-green-50 p-4 rounded-xl border border-green-200">
-                                            <div className="text-2xl font-bold text-green-700">
-                                                {predictionData.result?.rankRange?.worstClosingRank?.toLocaleString() || 'N/A'}
-                                            </div>
-                                            <div className="text-sm text-green-600 mt-1">Worst Closing Rank</div>
-                                        </div>
-                                        <div className="bg-purple-50 p-4 rounded-xl border border-purple-200">
-                                            <div className="text-2xl font-bold text-purple-700">
-                                                {predictionData.result?.totalRecords || 0}
-                                            </div>
-                                            <div className="text-sm text-purple-600 mt-1">Data Records</div>
-                                        </div>
-                                    </div>
-
-                                    {/* Institute Info */}
-                                    <div className="bg-gray-50 p-4 rounded-xl border">
-                                        <h3 className="font-semibold text-gray-900 mb-2">Institute Information</h3>
-                                        <div className="space-y-2">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-600">Institute</span>
-                                                <span className="font-medium text-gray-900 text-right">
-                                                    {predictionData.result?.institute || selectedCollege?.fullName}
-                                                </span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-600">Counseling Type</span>
-                                                <span className="font-medium text-gray-900">
-                                                    {predictionData.result?.counseling || getCounselingName(selectedCounseling)}
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    {/* Data Preview with Safety Check */}
-                                    {predictionData.result?.data && predictionData.result.data.length > 0 ? (
-                                        <div>
-                                            <h3 className="font-semibold text-gray-900 mb-3">Latest Cutoff Data</h3>
-                                            <div className="overflow-x-auto">
-                                                <table className="min-w-full divide-y divide-gray-200">
-                                                    <thead>
-                                                        <tr className="bg-gray-50">
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Year</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Round</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Opening Rank</th>
-                                                            <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">Closing Rank</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody className="divide-y divide-gray-200">
-                                                        {predictionData.result.data.slice(0, 3).map((item, index) => (
-                                                            <tr key={index} className="hover:bg-gray-50">
-                                                                <td className="px-4 py-3 text-sm">{item.year || 'N/A'}</td>
-                                                                <td className="px-4 py-3 text-sm">Round {item.round || 'N/A'}</td>
-                                                                <td className="px-4 py-3 text-sm font-medium">
-                                                                    {(item.openingRank || 0).toLocaleString()}
-                                                                </td>
-                                                                <td className="px-4 py-3 text-sm font-medium">
-                                                                    {(item.closingRank || 0).toLocaleString()}
-                                                                </td>
-                                                            </tr>
-                                                        ))}
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                            {predictionData.result.data.length > 3 && (
-                                                <p className="text-sm text-gray-500 mt-2">
-                                                    Showing 3 of {predictionData.result.totalRecords} records
-                                                </p>
-                                            )}
-                                        </div>
-                                    ) : (
-                                        <div className="text-center py-6">
-                                            <AlertCircle className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                                            <p className="text-gray-500">No detailed cutoff data available</p>
-                                        </div>
-                                    )}
-
-                                    {/* Message from API */}
-                                    {predictionData.message && (
-                                        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-                                            <p className="text-sm text-blue-700">{predictionData.message}</p>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
 
                     {/* Info Box */}
                     <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">

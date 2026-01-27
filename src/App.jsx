@@ -22,6 +22,7 @@ import UserAnalyticsView from "./components/analytics/UserAnalyticsView";
 import UploadAnalysisView from "./components/analytics/UploadAnalysisView";
 import AnalysisAssistance from "./components/analytics/AnalysisAssistance";
 import PredictRank from "./components/predictor/PredictRank";
+import RankPredictionResults from "./components/predictor/RankPredictionResults";
 
 function App() {
   const isOnline = useOnlineStatus()
@@ -39,6 +40,8 @@ function App() {
         <Route path="/" element={<Home />} />
          <Route path="/predict-colleges" element={<PredictColleges />} />
          <Route path="/predictor-rank" element={<PredictRank />}/>
+          <Route path="/rank-prediction-results" element={<RankPredictionResults />}/>
+         
       </Route>
 
       {/* Auth routes (no layout) */}
