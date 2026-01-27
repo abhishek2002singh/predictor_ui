@@ -1,5 +1,6 @@
 import { motion } from "framer-motion";
-import { ArrowRight, Sparkles, Play } from "lucide-react";
+import { ArrowRight, Sparkles, Play, Search } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Hero = () => {
   const handleScrollToPredictor = () => {
@@ -146,20 +147,23 @@ const Hero = () => {
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               onClick={handleScrollToPredictor}
-              className="group inline-flex items-center gap-2 bg-linear-to-r from-blue-600 to-violet-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 transition-all"
+              className="group inline-flex items-center hover:cursor-pointer gap-2 bg-linear-to-r from-blue-600 to-violet-600 text-white px-8 py-4 rounded-full font-semibold text-lg shadow-xl shadow-blue-500/25 hover:shadow-2xl hover:shadow-blue-500/30 transition-all"
             >
-              Start Prediction
+              Start Rank-Based Predictor
               <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
             </motion.button>
+
+            <Link to='/predictor-rank'>
 
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className="group inline-flex items-center gap-2 bg-white text-gray-700 px-8 py-4 rounded-full font-semibold text-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
+              className="group inline-flex items-center gap-2 hover:cursor-pointer bg-white text-gray-700 px-8 py-4 rounded-full font-semibold text-lg border border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all"
             >
-              <Play className="h-5 w-5 text-blue-600" />
-              Watch Demo
+              <Search className="h-5 w-5 text-blue-600" />
+              Start College Cutoff Search
             </motion.button>
+            </Link>
           </motion.div>
 
           {/* Stats */}

@@ -52,6 +52,9 @@ const API_ROUTES = {
     ASSISTANCE_ANALYSIS: "/api/analytics/assistance-analytics",
     ADMIN_ANALYSIS: "/api/analytics/admin-analytics",
     ASSITANCE_ANALYSIS :"/api/analytics/assistance-analytics"
+  },
+  RANK_PREDICTION_ROUTER_PATH :{
+    GET_RANK_PREDICTION:"/college/rank-Prediction-College"
   }
 };
 

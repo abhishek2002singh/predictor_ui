@@ -18,6 +18,7 @@ const navLinks = [
   { name: "Predictor", href: "/#predictor" },
   { name: "Features", href: "/#features" },
   { name: "About", href: "/#about" },
+  
 ];
 
 const Navbar = () => {
@@ -189,8 +190,9 @@ const Navbar = () => {
             ) : (
               <div className="flex items-center gap-3 ml-4">
                 <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                  <Link
-                    to="/signup"
+                 <Link
+  to="/#predictor"
+  onClick={(e) => handleNavClick(e, "/#predictor")}
                     className="inline-flex items-center gap-2 bg-linear-to-r from-blue-600 to-violet-600 text-white px-6 py-2.5 rounded-full font-semibold shadow-lg shadow-blue-500/25 hover:shadow-xl hover:shadow-blue-500/30 transition-all"
                   >
                     Get Started
