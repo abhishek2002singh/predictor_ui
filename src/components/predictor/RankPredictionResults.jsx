@@ -1,3 +1,6 @@
+
+
+
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -16,17 +19,14 @@ import {
   AlertCircle,
   ChevronLeft,
   ChevronRight,
-  X,
-  ChevronDown,
-  Calendar,
-  Users,
-  Award,
+  Search,
   PieChart,
-  User,
-  Hash
+  X
 } from 'lucide-react';
 import { fetchRankPrediction, showAllData, setUserDetailsSubmitted } from '../../slice/rankPredictionSlice';
 import { toast } from 'react-toastify';
+import FilterModal from '../../modal/FilterModal'; 
+import RankPredictionShimmer from '../shimmer/RankPredictionShimmer';
 
 const RankPredictionResults = () => {
   const location = useLocation();
@@ -63,7 +63,8 @@ const RankPredictionResults = () => {
     year: 'all',
     round: 'all'
   });
-  const [showFilterPanel, setShowFilterPanel] = useState(false);
+  const [showFilterModal, setShowFilterModal] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Fetch data when component mounts
   useEffect(() => {
@@ -146,17 +147,34 @@ const RankPredictionResults = () => {
     };
     setSelectedFilters(newFilters);
     
-    // Fetch data with new filters
-    if (collegeName && counselingType) {
-      const filterData = {
-        institute: collegeName,
-        CounselingType: counselingType,
-        page: 1,
-        limit: predictionData?.result?.limit || 20,
-        ...newFilters
-      };
-      dispatch(fetchRankPrediction(filterData));
-    }
+    // Create payload with correct parameter names
+    const payload = {
+      institute: collegeName,
+      CounselingType: counselingType,
+      ...(value !== 'all' && { [filterType]: value })
+    };
+    
+    dispatch(fetchRankPrediction(payload));
+  };
+
+  // Apply all filters
+  const handleApplyFilters = () => {
+    const activeFilters = {};
+    Object.entries(selectedFilters).forEach(([key, value]) => {
+      if (value !== 'all') {
+        activeFilters[key] = value;
+      }
+    });
+
+    const filterData = {
+      institute: collegeName,
+      CounselingType: counselingType,
+      ...activeFilters
+    };
+    
+    dispatch(fetchRankPrediction(filterData));
+    setShowFilterModal(false);
+    toast.success('Filters applied successfully');
   };
 
   // Reset all filters
@@ -169,28 +187,40 @@ const RankPredictionResults = () => {
       round: 'all'
     });
     
-    if (collegeName && counselingType) {
-      const predictionData = {
-        institute: collegeName,
-        CounselingType: counselingType
-      };
-      dispatch(fetchRankPrediction(predictionData));
-    }
+    const predictionData = {
+      institute: collegeName,
+      CounselingType: counselingType
+    };
+    dispatch(fetchRankPrediction(predictionData));
+    toast.success('Filters reset successfully');
   };
 
-  // Handle "Show Less" - set showAllData to false
-  const handleShowLess = () => {
-    dispatch({ type: 'rankPrediction/showAllData', payload: false });
+ 
+  // Filter data based on search query
+  const filterDataBySearch = (data) => {
+    if (!searchQuery.trim()) return data;
+    
+    return data.filter(item => {
+      const searchLower = searchQuery.toLowerCase();
+      return (
+        (item.academicProgramName?.toLowerCase().includes(searchLower)) ||
+        (item.category?.toLowerCase().includes(searchLower)) ||
+        (item.year?.toString().includes(searchQuery)) ||
+        (item.round?.toString().includes(searchQuery))
+      );
+    });
   };
 
-  // Get data to display (4 items initially or all if showAll is true)
+  // Get data to display
   const displayData = () => {
     if (!predictionData || !predictionData.success || !predictionData.result?.data) {
       return [];
     }
     
     const data = predictionData.result.data;
-    return showAll ? data : data.slice(0, 4);
+    const filteredData = filterDataBySearch(data);
+    
+    return showAll ? filteredData : filteredData.slice(0, 4);
   };
 
   // Calculate statistics
@@ -326,14 +356,59 @@ const RankPredictionResults = () => {
     return buttons;
   };
 
+  // Category-wise statistics
+  const getCategoryStats = () => {
+    if (!predictionData || !predictionData.success || !predictionData.result?.data) {
+      return [];
+    }
+
+    const data = predictionData.result.data;
+    const categoryMap = {};
+
+    data.forEach(item => {
+      const category = item.category || 'GENERAL';
+      if (!categoryMap[category]) {
+        categoryMap[category] = {
+          count: 0,
+          minOpening: Infinity,
+          maxClosing: 0,
+          totalOpening: 0,
+          totalClosing: 0
+        };
+      }
+
+      const stats = categoryMap[category];
+      stats.count++;
+      stats.minOpening = Math.min(stats.minOpening, item.openingRank || Infinity);
+      stats.maxClosing = Math.max(stats.maxClosing, item.closingRank || 0);
+      stats.totalOpening += item.openingRank || 0;
+      stats.totalClosing += item.closingRank || 0;
+    });
+
+    return Object.entries(categoryMap).map(([category, stats]) => ({
+      category,
+      count: stats.count,
+      avgOpening: Math.round(stats.totalOpening / stats.count),
+      avgClosing: Math.round(stats.totalClosing / stats.count),
+      minOpening: stats.minOpening === Infinity ? 0 : stats.minOpening,
+      maxClosing: stats.maxClosing
+    }));
+  };
+
+  const categoryStats = getCategoryStats();
+
+  // Create safe copies of filter arrays for sorting
+  // const sortedYears = filters.years ? [...filters.years].sort((a, b) => b - a) : [];
+  // const sortedRounds = filters.rounds ? [...filters.rounds].sort((a, b) => a - b) : [];
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-8 px-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-24 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
           <button
             onClick={handleBackToSearch}
-            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 font-medium transition-colors hover:cursor-pointer mb-6"
+            className="flex items-center gap-2 text-gray-600 hover:text-gray-800 font-medium transition-colors hover:cursor-pointer mb-3"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Search
@@ -366,12 +441,7 @@ const RankPredictionResults = () => {
 
         {/* Loading State */}
         {loading && (
-          <div className="flex items-center justify-center py-20">
-            <div className="text-center">
-              <Loader2 className="h-12 w-12 text-blue-500 animate-spin mx-auto mb-4" />
-              <p className="text-gray-600">Fetching prediction data...</p>
-            </div>
-          </div>
+          <RankPredictionShimmer />
         )}
 
         {/* Error State */}
@@ -463,263 +533,79 @@ const RankPredictionResults = () => {
               </div>
             </motion.div>
 
-            {/* Statistics Section */}
-            {statistics && Object.keys(statistics).length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-lg border overflow-hidden mb-8"
-              >
-                <div className="p-6 border-b bg-gradient-to-r from-gray-50 to-blue-50">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-500 rounded-lg">
-                      <PieChart className="h-5 w-5 text-white" />
-                    </div>
-                    <div>
-                      <h2 className="text-xl font-bold text-gray-900">Statistics</h2>
-                      <p className="text-sm text-gray-500">Detailed analysis by category, gender, and year</p>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {/* By Category */}
-                  {statistics.byCategory && statistics.byCategory.length > 0 && (
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <Award className="h-4 w-4 text-blue-600" />
-                        By Category
-                      </h3>
-                      <div className="space-y-3">
-                        {statistics.byCategory.slice(0, 5).map((cat, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className={`px-2 py-1 text-xs rounded ${getCategoryColor(cat._id)}`}>
-                              {cat._id}
-                            </span>
-                            <div className="text-right">
-                              <div className="font-medium">{cat.count} records</div>
-                              <div className="text-xs text-gray-500">
-                                Avg: {Math.round(cat.avgOpeningRank).toLocaleString()}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
+            {/* Search Bar */}
+            <div className="mb-6">
+              <div className="relative max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search programs, categories, years, or rounds..."
+                  className="w-full pl-10 pr-4 py-2.5 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
+            </div>
 
-                  {/* By Gender */}
-                  {statistics.byGender && statistics.byGender.length > 0 && (
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <User className="h-4 w-4 text-green-600" />
-                        By Gender
-                      </h3>
-                      <div className="space-y-3">
-                        {statistics.byGender.map((gender, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="text-sm font-medium">{gender._id}</span>
-                            <div className="text-right">
-                              <div className="font-medium">{gender.count} records</div>
-                              <div className="text-xs text-gray-500">
-                                Avg Rank: {Math.round(gender.avgOpeningRank).toLocaleString()}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* By Year */}
-                  {statistics.byYear && statistics.byYear.length > 0 && (
-                    <div>
-                      <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-purple-600" />
-                        By Year
-                      </h3>
-                      <div className="space-y-3">
-                        {statistics.byYear.map((year, index) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                            <span className="text-sm font-medium">{year._id}</span>
-                            <div className="text-right">
-                              <div className="font-medium">{year.count} records</div>
-                              <div className="text-xs text-gray-500">
-                                Avg: {Math.round(year.avgOpeningRank).toLocaleString()}
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </motion.div>
-            )}
-
-            {/* Filter Panel */}
-            {filters && Object.keys(filters).length > 0 && (
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="bg-white rounded-2xl shadow-lg border overflow-hidden mb-8"
-              >
-                <div className="p-6 border-b bg-gradient-to-r from-gray-50 to-green-50">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 bg-green-500 rounded-lg">
-                        <Filter className="h-5 w-5 text-white" />
-                      </div>
-                      <div>
-                        <h2 className="text-xl font-bold text-gray-900">Filters</h2>
-                        <p className="text-sm text-gray-500">Filter data by different criteria</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => setShowFilterPanel(!showFilterPanel)}
-                      className="flex items-center gap-2 text-gray-600 hover:text-gray-800"
-                    >
-                      {showFilterPanel ? 'Hide Filters' : 'Show Filters'}
-                      <ChevronDown className={`h-4 w-4 transition-transform ${showFilterPanel ? 'rotate-180' : ''}`} />
-                    </button>
-                  </div>
-                </div>
-
-                {showFilterPanel && (
-                  <div className="p-6 border-t">
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                      {/* Category Filter */}
-                      {filters.categories && filters.categories.length > 0 && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
-                          <select
-                            value={selectedFilters.category}
-                            onChange={(e) => handleFilterChange('category', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg"
-                          >
-                            <option value="all">All Categories</option>
-                            {filters.categories.map((cat, index) => (
-                              <option key={index} value={cat}>{cat}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-
-                      {/* Gender Filter */}
-                      {filters.genders && filters.genders.length > 0 && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Gender</label>
-                          <select
-                            value={selectedFilters.gender}
-                            onChange={(e) => handleFilterChange('gender', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg"
-                          >
-                            <option value="all">All Genders</option>
-                            {filters.genders.map((gender, index) => (
-                              <option key={index} value={gender}>{gender}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-
-                      {/* Year Filter */}
-                      {filters.years && filters.years.length > 0 && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Year</label>
-                          <select
-                            value={selectedFilters.year}
-                            onChange={(e) => handleFilterChange('year', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg"
-                          >
-                            <option value="all">All Years</option>
-                            {filters.years.sort((a, b) => b - a).map((year, index) => (
-                              <option key={index} value={year}>{year}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-
-                      {/* Round Filter */}
-                      {filters.rounds && filters.rounds.length > 0 && (
-                        <div>
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Round</label>
-                          <select
-                            value={selectedFilters.round}
-                            onChange={(e) => handleFilterChange('round', e.target.value)}
-                            className="w-full px-3 py-2 border rounded-lg"
-                          >
-                            <option value="all">All Rounds</option>
-                            {filters.rounds.sort((a, b) => b - a).map((round, index) => (
-                              <option key={index} value={round}>Round {round}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-500">
-                        {Object.values(selectedFilters).filter(v => v !== 'all').length > 0 ? (
-                          <span>Active filters: {Object.entries(selectedFilters)
-                            .filter(([key, value]) => value !== 'all')
-                            .map(([key, value]) => `${key}: ${value}`)
-                            .join(', ')}
-                          </span>
-                        ) : (
-                          <span>No active filters</span>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        <button
-                          onClick={handleResetFilters}
-                          className="px-4 py-2 text-gray-600 hover:text-gray-800 border rounded-lg hover:bg-gray-50"
-                        >
-                          Reset Filters
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </motion.div>
-            )}
-
-            {/* Data Table */}
+            {/* Main Content with Data Table */}
             <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
               className="bg-white rounded-2xl shadow-lg border overflow-hidden mb-8"
             >
               <div className="p-6 border-b bg-gradient-to-r from-gray-50 to-blue-50">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                   <div>
-                    <h2 className="text-xl font-bold text-gray-900">Cutoff Ranks</h2>
-                    <p className="text-sm text-gray-500">
-                      {showAll ? `Showing page ${currentPage} of ${totalPages}` : `Showing 4 out of ${totalRecords} records`}
-                    </p>
+                    <div className="flex items-center gap-3 mb-2">
+                      <h2 className="text-xl font-bold text-gray-900">Cutoff Ranks</h2>
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium">
+                        {showAll ? (
+                          <span>Page {currentPage} of {totalPages}</span>
+                        ) : (
+                          <span>Preview</span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                      <p className="text-sm text-gray-500">
+                        {showAll ? (
+                          <span>{dataToDisplay.length} records • Total: {totalRecords}</span>
+                        ) : (
+                          <span>Showing {dataToDisplay.length} out of {totalRecords} records</span>
+                        )}
+                      </p>
+                      {searchQuery && (
+                        <span className="text-sm bg-blue-50 text-blue-700 px-2 py-1 rounded">
+                          Search: "{searchQuery}"
+                        </span>
+                      )}
+                    </div>
                   </div>
                   
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-wrap gap-3">
                     {!showAll && totalRecords > 4 && (
                       <button
                         onClick={handleViewAllClick}
-                        className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg"
+                        className="flex items-center gap-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white font-medium py-2.5 px-5 rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg whitespace-nowrap"
                       >
                         <Eye className="h-4 w-4" />
-                        View All Data ({totalRecords})
+                        View All ({totalRecords})
                       </button>
                     )}
                     
-                    {showAll && (
-                      <button
-                        onClick={handleShowLess}
-                        className="flex items-center gap-2 bg-gradient-to-r from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700 text-white font-medium py-2.5 px-5 rounded-lg transition-all hover:-translate-y-0.5 hover:shadow-lg"
-                      >
-                        <EyeOff className="h-4 w-4" />
-                        Show Less
-                      </button>
-                    )}
+                   
                     
-                    <button className="flex items-center gap-2 border border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-2.5 px-5 rounded-lg transition-all hover:bg-gray-50">
+                    {/* Filter Button - Now between View All and Export */}
+                   
+                    <button
+                      onClick={() => setShowFilterModal(true)}
+                      className="flex items-center gap-2 border border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-2.5 px-5 rounded-lg transition-all hover:bg-gray-50 whitespace-nowrap"
+                    >
+                      <Filter className="h-4 w-4" />
+                      Filters
+                    </button>
+                    
+                    <button className="flex items-center gap-2 border border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-2.5 px-5 rounded-lg transition-all hover:bg-gray-50 whitespace-nowrap">
                       <Download className="h-4 w-4" />
                       Export
                     </button>
@@ -727,11 +613,12 @@ const RankPredictionResults = () => {
                 </div>
               </div>
 
+              {/* Data Table */}
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
                     <tr className="bg-gray-50 border-b">
-                      <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Academic Program</th>
+                      <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700 min-w-[200px]">Academic Program</th>
                       <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Year</th>
                       <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Round</th>
                       <th className="py-4 px-6 text-left text-sm font-semibold text-gray-700">Category</th>
@@ -743,10 +630,20 @@ const RankPredictionResults = () => {
                   <tbody>
                     {dataToDisplay.length > 0 ? (
                       dataToDisplay.map((item, index) => (
-                        <tr key={index} className="border-b hover:bg-gray-50 transition-colors">
+                        <tr 
+                          key={index} 
+                          className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
+                          onClick={() => {
+                            // Navigate to detailed view or show modal
+                            toast.info(`Selected: ${item.academicProgramName || 'Program'}`);
+                          }}
+                        >
                           <td className="py-4 px-6">
-                            <div className="font-medium text-gray-900 max-w-xs truncate">
+                            <div className="font-medium text-gray-900">
                               {item.academicProgramName || 'N/A'}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {item.quotaType || 'Regular'}
                             </div>
                           </td>
                           <td className="py-4 px-6">
@@ -782,8 +679,14 @@ const RankPredictionResults = () => {
                     ) : (
                       <tr>
                         <td colSpan="7" className="py-12 text-center">
-                          <div className="text-gray-400 mb-3">No data available</div>
-                          <p className="text-gray-500">Try selecting different college or counseling type</p>
+                          <div className="text-gray-400 mb-3">No matching records found</div>
+                          <p className="text-gray-500">Try adjusting your filters or search query</p>
+                          <button
+                            onClick={handleResetFilters}
+                            className="mt-4 px-4 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100"
+                          >
+                            Reset Filters
+                          </button>
                         </td>
                       </tr>
                     )}
@@ -815,7 +718,7 @@ const RankPredictionResults = () => {
                       </button>
                       
                       {/* Page Numbers */}
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 overflow-x-auto py-2">
                         {generatePaginationButtons()}
                       </div>
                       
@@ -855,6 +758,64 @@ const RankPredictionResults = () => {
                 </div>
               )}
             </motion.div>
+
+            {/* Category-wise Statistics */}
+            {categoryStats.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-white rounded-2xl shadow-lg border p-6 mb-8"
+              >
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="p-2 bg-purple-500 rounded-lg">
+                    <PieChart className="h-5 w-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-gray-900">Category-wise Analysis</h2>
+                    <p className="text-sm text-gray-500">Click on any category to filter</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {categoryStats.map((stat, index) => (
+                    <div 
+                      key={index}
+                      className="border rounded-xl p-4 hover:shadow-md transition-shadow cursor-pointer group"
+                      onClick={() => {
+                        handleFilterChange('category', stat.category);
+                        toast.success(`Filtered by ${stat.category}`);
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-3">
+                        <span className={`px-2 py-1 text-xs font-medium rounded ${getCategoryColor(stat.category)}`}>
+                          {stat.category}
+                        </span>
+                        <span className="text-sm text-gray-500">{stat.count} records</span>
+                      </div>
+                      <div className="space-y-2">
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Avg Opening:</span>
+                          <span className="font-medium text-green-700">{stat.avgOpening.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Avg Closing:</span>
+                          <span className="font-medium text-red-700">{stat.avgClosing.toLocaleString()}</span>
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <span className="text-sm text-gray-600">Min Opening:</span>
+                          <span className="font-medium text-green-600">{stat.minOpening.toLocaleString()}</span>
+                        </div>
+                      </div>
+                      <div className="mt-3 pt-3 border-t text-center">
+                        <span className="text-xs text-blue-600 font-medium group-hover:text-blue-700">
+                          Click to filter by {stat.category}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
+            )}
           </>
         )}
 
@@ -956,6 +917,18 @@ const RankPredictionResults = () => {
             </motion.div>
           </div>
         )}
+
+        {/* Filter Modal */}
+        
+        <FilterModal
+          isOpen={showFilterModal}
+          onClose={() => setShowFilterModal(false)}
+          filters={filters}
+          selectedFilters={selectedFilters}
+          onFilterChange={handleFilterChange}
+          onApplyFilters={handleApplyFilters}
+          onResetFilters={handleResetFilters}
+        />
       </div>
     </div>
   );
