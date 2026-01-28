@@ -14,6 +14,17 @@ export const rankPredictionService = {
         } catch (error) {
             throw error.response?.data || error.message;
         }
+    },
+
+    userDetailsFromRankPredictions: async(data) =>{
+        try{
+            const url = API_ROUTES?.RANK_PREDICTION_ROUTER_PATH?.USER_PREDICTION_FROM_RANK_PREDICTION
+            const response = await apiClient.post(url , data)
+            return response
+
+        }catch (error) {
+            throw error.response?.data || error.message;
+        }
     }
 };
 

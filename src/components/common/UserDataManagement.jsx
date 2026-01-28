@@ -1154,6 +1154,13 @@ const handleExport = async (examType = "") => {
                           <span className="text-xs text-gray-500">
                             {formatDateTime(check.checkedAt)}
                           </span>
+                          {check?.gainLeedFrom?.map((leed)=>(
+                            <div>
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
+                            {leed}
+                          </span>
+                            </div>
+                          ))}
                         </div>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
                           <div>

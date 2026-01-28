@@ -54,7 +54,8 @@ const API_ROUTES = {
     ASSITANCE_ANALYSIS :"/api/analytics/assistance-analytics"
   },
   RANK_PREDICTION_ROUTER_PATH :{
-    GET_RANK_PREDICTION:"/college/rank-Prediction-College"
+    GET_RANK_PREDICTION:"/college/rank-Prediction-College",
+    USER_PREDICTION_FROM_RANK_PREDICTION :"/college/create"
   }
 };
 
