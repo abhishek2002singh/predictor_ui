@@ -1,25 +1,31 @@
-
-// store/slices/rankPredictionSlice.js
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
-import rankPredictionService from "../services/rankPredictorForCollege";
-import userDetailsFromRankPredictions from '../services/rankPredictorForCollege'
+import rankPredictionService from '../services/rankPredictorForCollege'
 
 /* ======================
-   ASYNC THUNK
+   ASYNC THUNKS
 ====================== */
 
 export const fetchRankPrediction = createAsyncThunk(
   "rankPrediction/fetchRankPrediction",
   async (predictionData, { rejectWithValue }) => {
     try {
-      return await rankPredictionService.getRankPrediction(predictionData);
+      return await rankPredictionService?.getRankPrediction(predictionData);
     } catch (err) {
       return rejectWithValue(err.message);
     }
   }
 );
 
-
+export const submitUserDetails = createAsyncThunk(
+  "rankPrediction/submitUserDetails",
+  async (userData, { rejectWithValue }) => {
+    try {
+      return await rankPredictionService?.userDetailsFromRankPredictions(userData);
+    } catch (err) {
+      return rejectWithValue(err.message);
+    }
+  }
+);
 
 /* ======================
    INITIAL STATE
@@ -28,10 +34,13 @@ export const fetchRankPrediction = createAsyncThunk(
 const initialState = {
   predictionData: null,
   loading: false,
+  submitLoading: false, // Separate loading state for user details submission
   error: null,
+  submitError: null, // Separate error state for user details submission
   lastUpdated: null,
-  showAllData: false, // New state to track if all data should be shown
-  userDetailsSubmitted: false // Track if user submitted details
+  showAllData: false,
+  userDetailsSubmitted: false,
+  userDetailsResponse: null // Store the response from user details submission
 };
 
 /* ======================
@@ -51,17 +60,16 @@ const rankPredictionSlice = createSlice({
     resetRankPrediction() {
       return initialState;
     },
-    // New reducer to show all data
     showAllData(state) {
       state.showAllData = true;
     },
-    // New reducer to mark user details as submitted
     setUserDetailsSubmitted(state, action) {
       state.userDetailsSubmitted = action.payload;
     }
   },
   extraReducers: (builder) => {
     builder
+      // Fetch Rank Prediction
       .addCase(fetchRankPrediction.pending, (state) => {
         state.loading = true;
         state.error = null;
@@ -74,6 +82,22 @@ const rankPredictionSlice = createSlice({
       .addCase(fetchRankPrediction.rejected, (state, action) => {
         state.loading = false;
         state.error = action.payload;
+      })
+      
+      // Submit User Details
+      .addCase(submitUserDetails.pending, (state) => {
+        state.submitLoading = true;
+        state.submitError = null;
+      })
+      .addCase(submitUserDetails.fulfilled, (state, action) => {
+        state.submitLoading = false;
+        state.userDetailsSubmitted = true;
+        state.userDetailsResponse = action.payload;
+      })
+      .addCase(submitUserDetails.rejected, (state, action) => {
+        state.submitLoading = false;
+        state.submitError = action.payload;
+        state.userDetailsSubmitted = false;
       });
   }
 });

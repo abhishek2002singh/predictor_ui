@@ -23,6 +23,8 @@ import UploadAnalysisView from "./components/analytics/UploadAnalysisView";
 import AnalysisAssistance from "./components/analytics/AnalysisAssistance";
 import PredictRank from "./components/predictor/PredictRank";
 import RankPredictionResults from "./components/predictor/RankPredictionResults";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function App() {
   const isOnline = useOnlineStatus()
@@ -34,6 +36,9 @@ function App() {
           ⚠️ You are offline. Please check your internet connection.
         </div>
       )}
+      
+      <ToastContainer />
+      
     <Routes>
       {/* Public routes with main layout */}
       <Route element={<Layout />}>

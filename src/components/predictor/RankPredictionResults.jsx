@@ -1,6 +1,3 @@
-
-
-
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
@@ -14,7 +11,6 @@ import {
   BarChart3, 
   Download,
   Eye,
-  EyeOff,
   Loader2,
   AlertCircle,
   ChevronLeft,
@@ -23,7 +19,12 @@ import {
   PieChart,
   X
 } from 'lucide-react';
-import { fetchRankPrediction, showAllData, setUserDetailsSubmitted } from '../../slice/rankPredictionSlice';
+import { 
+  fetchRankPrediction, 
+  showAllData, 
+  setUserDetailsSubmitted,
+  submitUserDetails  // ADDED
+} from '../../slice/rankPredictionSlice';
 import { toast } from 'react-toastify';
 import FilterModal from '../../modal/FilterModal'; 
 import RankPredictionShimmer from '../shimmer/RankPredictionShimmer';
@@ -43,15 +44,24 @@ const RankPredictionResults = () => {
     collegeShortName 
   } = location.state || {};
 
-  // Get state from Redux
-  const { predictionData, loading, error, showAllData: showAll, userDetailsSubmitted } = useSelector(state => state.rankPrediction);
+  // Get state from Redux - UPDATED
+  const { 
+    predictionData, 
+    loading, 
+    error, 
+    showAllData: showAll, 
+    userDetailsSubmitted,
+    submitLoading,
+    submitError
+  } = useSelector(state => state.rankPrediction);
   
   // State for modal
   const [showUserDetailsModal, setShowUserDetailsModal] = useState(false);
   const [userDetails, setUserDetails] = useState({
     firstName: '',
     lastName: '',
-    mobileNumber: ''
+    mobileNumber: '',
+    emailId: ''
   });
   const [formErrors, setFormErrors] = useState({});
   
@@ -76,9 +86,16 @@ const RankPredictionResults = () => {
       dispatch(fetchRankPrediction(predictionData));
     } else {
       // Redirect back if no data
-      navigate('/predict-rank');
+      navigate(-1);
     }
   }, [collegeName, counselingType, dispatch, navigate]);
+
+  // Show error toast if submit fails
+  useEffect(() => {
+    if (submitError) {
+      toast.error(submitError || 'Failed to submit details');
+    }
+  }, [submitError]);
 
   // Handle "View All" button click
   const handleViewAllClick = () => {
@@ -92,14 +109,17 @@ const RankPredictionResults = () => {
     }
   };
 
-  // Handle user details submission
-  const handleSubmitUserDetails = (e) => {
+  // Handle user details submission - UPDATED
+  const handleSubmitUserDetails = async (e) => {
     e.preventDefault();
     
     // Validation
     const errors = {};
     if (!userDetails.firstName.trim()) errors.firstName = 'First name is required';
     if (!userDetails.lastName.trim()) errors.lastName = 'Last name is required';
+    if (!userDetails.emailId?.trim()) {
+      errors.emailId = "Email is required";
+    }
     if (!userDetails.mobileNumber.trim()) errors.mobileNumber = 'Mobile number is required';
     else if (!/^\d{10}$/.test(userDetails.mobileNumber)) errors.mobileNumber = 'Enter valid 10-digit number';
     
@@ -108,21 +128,43 @@ const RankPredictionResults = () => {
       return;
     }
 
-    console.log('User details submitted:', userDetails);
-    
-    dispatch(setUserDetailsSubmitted(true));
-    dispatch(showAllData());
-    
-    setShowUserDetailsModal(false);
-    setUserDetails({ firstName: '', lastName: '', mobileNumber: '' });
-    setFormErrors({});
-    
-    toast.success('Details submitted successfully! Showing all data.');
+    try {
+      // Create the payload for the API
+      const userDataPayload = {
+        mobileNumber: userDetails.mobileNumber,
+        firstName: userDetails.firstName,
+        lastName: userDetails.lastName,
+        emailId: userDetails.emailId,
+        
+      };
+
+      // Dispatch the API call
+      const result = await dispatch(submitUserDetails(userDataPayload)).unwrap();
+      
+      // If successful, show all data
+      dispatch(setUserDetailsSubmitted(true));
+      dispatch(showAllData());
+      
+      setShowUserDetailsModal(false);
+      setUserDetails({ 
+        firstName: '', 
+        lastName: '', 
+        mobileNumber: '',
+        emailId: '' 
+      });
+      setFormErrors({});
+      
+      toast.success('Details submitted successfully! Showing all data.');
+      
+    } catch (error) {
+      // Error is already handled by Redux, but you can add additional handling
+      console.error('Failed to submit user details:', error);
+    }
   };
 
   // Handle back to search
   const handleBackToSearch = () => {
-    navigate('/predict-rank');
+    navigate(-1);
   };
 
   // Handle pagination
@@ -195,7 +237,6 @@ const RankPredictionResults = () => {
     toast.success('Filters reset successfully');
   };
 
- 
   // Filter data based on search query
   const filterDataBySearch = (data) => {
     if (!searchQuery.trim()) return data;
@@ -397,10 +438,6 @@ const RankPredictionResults = () => {
 
   const categoryStats = getCategoryStats();
 
-  // Create safe copies of filter arrays for sorting
-  // const sortedYears = filters.years ? [...filters.years].sort((a, b) => b - a) : [];
-  // const sortedRounds = filters.rounds ? [...filters.rounds].sort((a, b) => a - b) : [];
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-24 px-4">
       <div className="max-w-7xl mx-auto">
@@ -593,10 +630,6 @@ const RankPredictionResults = () => {
                       </button>
                     )}
                     
-                   
-                    
-                    {/* Filter Button - Now between View All and Export */}
-                   
                     <button
                       onClick={() => setShowFilterModal(true)}
                       className="flex items-center gap-2 border border-gray-300 hover:border-gray-400 text-gray-700 font-medium py-2.5 px-5 rounded-lg transition-all hover:bg-gray-50 whitespace-nowrap"
@@ -634,7 +667,6 @@ const RankPredictionResults = () => {
                           key={index} 
                           className="border-b hover:bg-gray-50 transition-colors cursor-pointer"
                           onClick={() => {
-                            // Navigate to detailed view or show modal
                             toast.info(`Selected: ${item.academicProgramName || 'Program'}`);
                           }}
                         >
@@ -880,6 +912,24 @@ const RankPredictionResults = () => {
 
                   <div>
                     <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Email Id*
+                    </label>
+                    <input
+                      type="email"
+                      value={userDetails.emailId}
+                      onChange={(e) => setUserDetails({...userDetails, emailId: e.target.value})}
+                      className={`w-full px-4 py-3 border rounded-lg outline-none transition-colors ${
+                        formErrors.emailId ? 'border-red-500' : 'border-gray-300 hover:border-gray-400 focus:border-blue-500'
+                      }`}
+                      placeholder="Enter your email address"
+                    />
+                    {formErrors.emailId && (
+                      <p className="mt-2 text-sm text-red-600">{formErrors.emailId}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
                       Mobile Number
                     </label>
                     <input
@@ -908,9 +958,21 @@ const RankPredictionResults = () => {
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all font-medium"
+                    disabled={submitLoading}
+                    className={`flex-1 px-4 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg transition-all font-medium ${
+                      submitLoading 
+                        ? 'opacity-70 cursor-not-allowed' 
+                        : 'hover:from-blue-600 hover:to-blue-700'
+                    }`}
                   >
-                    View All Data
+                    {submitLoading ? (
+                      <>
+                        <Loader2 className="h-4 w-4 animate-spin inline mr-2" />
+                        Submitting...
+                      </>
+                    ) : (
+                      'View All Data'
+                    )}
                   </button>
                 </div>
               </form>
@@ -919,7 +981,6 @@ const RankPredictionResults = () => {
         )}
 
         {/* Filter Modal */}
-        
         <FilterModal
           isOpen={showFilterModal}
           onClose={() => setShowFilterModal(false)}
