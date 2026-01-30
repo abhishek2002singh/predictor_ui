@@ -10,6 +10,8 @@ export const rankPredictionService = {
                 API_ROUTES.RANK_PREDICTION_ROUTER_PATH.GET_RANK_PREDICTION, 
                 data
             );
+
+            console.log(response)
             return response;
         } catch (error) {
             throw error.response?.data || error.message;

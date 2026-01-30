@@ -180,5 +180,5 @@ put(endpoint, data, options = {}) {
 }
 
 // Create instance with base URL
-export const apiClient = new ApiClient( "http://10.205.25.230:7777" || "http://localhost:7777");
+export const apiClient = new ApiClient("http://localhost:7777");
 export default apiClient;
