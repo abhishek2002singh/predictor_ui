@@ -82,39 +82,15 @@ const FilterModalForRankWiseSearch = ({
       'Mining Engineering',
       'Metallurgical Engineering'
     ],
-    institutes: availableFilters?.institutes || [
-      'Indian Institute of Technology Bombay',
-      'Indian Institute of Technology Delhi',
-      'Indian Institute of Technology Madras',
-      'Indian Institute of Technology Kanpur',
-      'Indian Institute of Technology Kharagpur',
-      'Indian Institute of Technology Roorkee',
-      'Indian Institute of Technology Guwahati',
-      'National Institute of Technology Tiruchirappalli',
-      'National Institute of Technology Rourkela',
-      'National Institute of Technology Surathkal',
-      'Delhi Technological University',
-      'Indian Institute of Information Technology Hyderabad',
-      'Birla Institute of Technology and Science, Pilani',
-      'Vellore Institute of Technology'
-    ],
-    quotas: availableFilters?.quotas || [
-      'AI',
-      'HS',
-      'OS',
-      'GO',
-      'AP',
-      'JK',
-      'LA'
-    ]
+    
+   
   };
 
   // Create safe copies for sorting
   const sortedYears = filters.years ? [...filters.years].sort((a, b) => b - a) : [];
   const sortedRounds = filters.rounds ? [...filters.rounds].sort((a, b) => a - b) : [];
   const sortedBranches = filters.branches ? [...filters.branches].sort() : [];
-  const sortedInstitutes = filters.institutes ? [...filters.institutes].sort() : [];
-  const sortedQuotas = filters.quotas ? [...filters.quotas].sort() : [];
+ 
 
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -402,106 +378,9 @@ const FilterModalForRankWiseSearch = ({
             </div>
 
             {/* Institute Filter */}
-            <div className="border rounded-lg">
-              <button
-                onClick={() => toggleSection('institute')}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <Building2 className="h-5 w-5 text-gray-600" />
-                  <div className="text-left">
-                    <h3 className="font-medium text-gray-900">Institute</h3>
-                    <p className="text-sm text-gray-500">
-                      {selectedFilters.institute === 'all' || !selectedFilters.institute 
-                        ? 'All Institutes' 
-                        : selectedFilters.institute}
-                    </p>
-                  </div>
-                </div>
-                {expandedSections.institute ? (
-                  <ChevronUp className="h-5 w-5 text-gray-500" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-500" />
-                )}
-              </button>
-              
-              {expandedSections.institute && (
-                <div className="p-4 pt-0 border-t">
-                  <div className="space-y-2 max-h-60 overflow-y-auto">
-                    <button
-                      onClick={() => onFilterChange('institute', 'all')}
-                      className={`w-full text-left px-4 py-3 rounded-lg ${selectedFilters.institute === 'all' || !selectedFilters.institute 
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                          : 'hover:bg-gray-50'}`}
-                    >
-                      All Institutes
-                    </button>
-                    {sortedInstitutes.map((institute, index) => (
-                      <button
-                        key={index}
-                        onClick={() => onFilterChange('institute', institute)}
-                        className={`w-full text-left px-4 py-3 rounded-lg ${selectedFilters.institute === institute 
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                            : 'hover:bg-gray-50'}`}
-                      >
-                        {institute}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+           
 
-            {/* Quota Filter */}
-            <div className="border rounded-lg">
-              <button
-                onClick={() => toggleSection('quota')}
-                className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
-              >
-                <div className="flex items-center gap-3">
-                  <BookOpen className="h-5 w-5 text-gray-600" />
-                  <div className="text-left">
-                    <h3 className="font-medium text-gray-900">Quota</h3>
-                    <p className="text-sm text-gray-500">
-                      {selectedFilters.quota === 'all' || !selectedFilters.quota 
-                        ? 'All Quotas' 
-                        : selectedFilters.quota}
-                    </p>
-                  </div>
-                </div>
-                {expandedSections.quota ? (
-                  <ChevronUp className="h-5 w-5 text-gray-500" />
-                ) : (
-                  <ChevronDown className="h-5 w-5 text-gray-500" />
-                )}
-              </button>
-              
-              {expandedSections.quota && (
-                <div className="p-4 pt-0 border-t">
-                  <div className="space-y-2">
-                    <button
-                      onClick={() => onFilterChange('quota', 'all')}
-                      className={`w-full text-left px-4 py-3 rounded-lg ${selectedFilters.quota === 'all' || !selectedFilters.quota 
-                          ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                          : 'hover:bg-gray-50'}`}
-                    >
-                      All Quotas
-                    </button>
-                    {sortedQuotas.map((quota, index) => (
-                      <button
-                        key={index}
-                        onClick={() => onFilterChange('quota', quota)}
-                        className={`w-full text-left px-4 py-3 rounded-lg ${selectedFilters.quota === quota 
-                            ? 'bg-blue-50 text-blue-700 border border-blue-200' 
-                            : 'hover:bg-gray-50'}`}
-                      >
-                        {quota}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
+            
           </div>
 
           {/* Active Filters Display */}
