@@ -46,9 +46,9 @@ const FilterModalForRankWiseSearch = ({
   // Default filter options if not provided
   const filters = {
     categories: availableFilters?.categories || [
-      'General',
+      'GENERAL',
       'EWS',
-      'General-PWD',
+      'GENERAL-PWD',
       'OBC-NCL',
       'OBC-NCL-PWD',
       'SC',

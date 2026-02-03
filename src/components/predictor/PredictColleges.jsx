@@ -218,7 +218,7 @@ const PredictColleges = () => {
 
       const params = {
         rank: profileData.rank,
-        category: profileData.category,
+        category: selectedFilters.category,
         gender: selectedFilters.gender || profileData.gender,
         typeOfExam: profileData.examType,
         page: 1,
@@ -229,6 +229,10 @@ const PredictColleges = () => {
         institute: selectedFilters.institute,
         quota: selectedFilters.quota
       };
+
+
+      console.log("DEBUG - Applying filters with selectedFilters:", selectedFilters);
+
 
       // Remove 'all' values
       Object.keys(params).forEach(key => {
@@ -609,10 +613,17 @@ const PredictColleges = () => {
             College Predictions
           </h1>
           <p className="text-gray-600 text-lg">
-            Based on: Rank <span className="font-semibold text-gray-800">{displayData.rank}</span> |
-            Category <span className="font-semibold text-gray-800">{displayData.category}</span> |
-            Gender <span className="font-semibold text-gray-800">{displayData.gender}</span> |
-            Exam <span className="font-semibold text-gray-800">{displayData.examType}</span>
+            Based on: Rank <span className="font-semibold text-gray-800">{displayData.rank}</span>
+           {
+            selectedFilters.category ? (
+              <span className="ml-2">Category <span className="font-semibold text-gray-800">{selectedFilters.category}</span></span>
+            ) : <span className="ml-2">Category <span className="font-semibold text-gray-800">{displayData.category}</span></span>}
+            {selectedFilters.gender ? (
+              <span className="ml-2">Gender <span className="font-semibold text-gray-800">{selectedFilters.gender}</span></span>
+            ) : <span className="ml-2">Gender <span className="font-semibold text-gray-800">{displayData.gender}</span></span>}
+            {selectedFilters.examType ? (
+              <span className="ml-2">Exam <span className="font-semibold text-gray-800">{selectedFilters.examType}</span></span>
+            ) : <span className="ml-2">Exam <span className="font-semibold text-gray-800">{displayData.examType}</span></span>}
           </p>
         </motion.div>
 
