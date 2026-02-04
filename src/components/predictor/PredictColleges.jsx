@@ -1,3 +1,5 @@
+
+
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { useDispatch, useSelector } from "react-redux";
@@ -79,6 +81,7 @@ const PredictColleges = () => {
     institute: 'all',
     category: 'all',
     gender: 'all',
+    quota: 'all'
   });
 
   // Get form data from navigation state
@@ -203,36 +206,16 @@ const PredictColleges = () => {
       const params = {
         rank: searchRank,
         typeOfExam: searchExamType,
-        year: selectedFilters.year,
-        round: selectedFilters.round,
-        branch: selectedFilters.branch,
-        institute: selectedFilters.institute,
-        category: selectedFilters.category,
-        gender: selectedFilters.gender,
-
         page: 1,
         limit: 20,
       };
 
-      // Add filters if not 'all'
-      if (selectedFilters.year && selectedFilters.year !== 'all') {
-        params.year = selectedFilters.year;
-      }
-      if (selectedFilters.round && selectedFilters.round !== 'all') {
-        params.round = selectedFilters.round;
-      }
-      if (selectedFilters.branch && selectedFilters.branch !== 'all') {
-        params.branch = selectedFilters.branch;
-      }
-      if (selectedFilters.institute && selectedFilters.institute !== 'all') {
-        params.institute = selectedFilters.institute;
-      }
-      if (selectedFilters.category && selectedFilters.category !== 'all') {
-        params.category = selectedFilters.category;
-      }
-      if (selectedFilters.gender && selectedFilters.gender !== 'all') {
-        params.gender = selectedFilters.gender;
-      } 
+      // Add all filters (only if not 'all')
+      Object.keys(selectedFilters).forEach(key => {
+        if (selectedFilters[key] && selectedFilters[key] !== 'all') {
+          params[key] = selectedFilters[key];
+        }
+      });
 
       console.log("DEBUG - Applying filters with params:", params);
       await dispatch(fetchCutoffs(params)).unwrap();
@@ -261,8 +244,33 @@ const PredictColleges = () => {
       round: 'all',
       branch: 'all',
       institute: 'all',
+      category: 'all',
+      gender: 'all',
       quota: 'all'
     });
+  };
+
+  // Common function to build params for API calls
+  const buildApiParams = (page = 1) => {
+    if (!searchRank || !searchExamType) {
+      throw new Error("Search criteria not available");
+    }
+
+    const params = {
+      rank: searchRank,
+      typeOfExam: searchExamType,
+      page: page,
+      limit: 20
+    };
+
+    // Add all filters (only if not 'all')
+    Object.keys(selectedFilters).forEach(key => {
+      if (selectedFilters[key] && selectedFilters[key] !== 'all') {
+        params[key] = selectedFilters[key];
+      }
+    });
+
+    return params;
   };
 
   // Fetch colleges with pagination (20 per page)
@@ -274,30 +282,7 @@ const PredictColleges = () => {
     }
 
     try {
-      const params = {
-        rank: searchRank,
-        typeOfExam: searchExamType,
-        page,
-        limit: 20
-      };
-
-      // Add filters if not 'all'
-      if (selectedFilters.year && selectedFilters.year !== 'all') {
-        params.year = selectedFilters.year;
-      }
-      if (selectedFilters.round && selectedFilters.round !== 'all') {
-        params.round = selectedFilters.round;
-      }
-      if (selectedFilters.branch && selectedFilters.branch !== 'all') {
-        params.branch = selectedFilters.branch;
-      }
-      if (selectedFilters.institute && selectedFilters.institute !== 'all') {
-        params.institute = selectedFilters.institute;
-      }
-      if (selectedFilters.quota && selectedFilters.quota !== 'all') {
-        params.quota = selectedFilters.quota;
-      }
-
+      const params = buildApiParams(page);
       console.log("DEBUG - Fetching colleges with params:", params);
 
       await dispatch(fetchCutoffs(params)).unwrap();
@@ -362,10 +347,10 @@ const PredictColleges = () => {
   const getProbabilityBadge = (probability, percentage) => {
     const probClass = probability === 'High Chance'
       ? 'bg-green-100 text-green-800 border-green-300'
-      : probability === 'Medium Chance'
+      : probability === 'Moderate Chance'
         ? 'bg-yellow-100 text-yellow-800 border-yellow-300'
         : probability === 'Low Chance'
-          ? 'bg-orange-100 text-orange-800 border-orange-300'
+          ? 'bg-red-100 text-red-800 border-orange-300'
           : 'bg-red-100 text-red-800 border-red-300';
 
     return (
@@ -506,6 +491,37 @@ const PredictColleges = () => {
           </span>
         </motion.div>
 
+        {/* Active Filters Display */}
+        {Object.values(selectedFilters).some(v => v !== 'all' && v !== undefined) && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6"
+          >
+            <div className="bg-white p-4 rounded-xl border border-blue-200 shadow-sm">
+              <h4 className="font-medium text-blue-900 mb-2">Active Filters:</h4>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(selectedFilters)
+                  .filter(([_, value]) => value !== 'all' && value !== undefined)
+                  .map(([key, value]) => (
+                    <span 
+                      key={key} 
+                      className="px-3 py-1.5 bg-blue-100 text-blue-800 rounded-lg text-sm font-medium flex items-center gap-2"
+                    >
+                      {key}: {value}
+                      <button
+                        onClick={() => handleFilterChange(key, 'all')}
+                        className="text-blue-600 hover:text-blue-800"
+                      >
+                        <Check className="h-3 w-3" />
+                      </button>
+                    </span>
+                  ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
         {/* Main Content */}
         <div className="max-w-6xl mx-auto">
           {/* Recommended Colleges Section */}
@@ -567,7 +583,7 @@ const PredictColleges = () => {
                               {college.institute}
                             </h3>
                             <p className="text-gray-700 mb-3">
-                              {college.academicProgramName} {college.quota && `(${college.quota})`}
+                              {college.academicProgramName} - {college.academicProgramType}
                             </p>
                             {getProbabilityBadge(college.probability, college.probabilityPercentage)}
                           </div>
@@ -608,7 +624,7 @@ const PredictColleges = () => {
                                   <div className="h-2 flex-1 bg-gray-200 rounded-full overflow-hidden">
                                     <div
                                       className={`h-full rounded-full ${college.probability === 'High Chance' ? 'bg-green-500' :
-                                          college.probability === 'Medium Chance' ? 'bg-yellow-500' :
+                                          college.probability === 'Moderate Chance' ? 'bg-yellow-500' :
                                             college.probability === 'Low Chance' ? 'bg-red-500' :
                                               'bg-orange-500'
                                         }`}

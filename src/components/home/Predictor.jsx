@@ -19,7 +19,7 @@ import { showError, showSuccess } from "../../utils/toast";
 
 const EXAMS = [
   { value: "JEE_MAINS", label: "JEE Mains" },
-  { value: "JEE_ADVANCED", label: "EE Advanced" },
+  { value: "JEE_ADVANCED", label: "JEE Advanced" },
   { value: "CUET", label: "CUET" },
 ];
 

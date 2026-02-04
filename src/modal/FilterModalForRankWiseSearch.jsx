@@ -46,14 +46,19 @@ const FilterModalForRankWiseSearch = ({
   // Default filter options if not provided
   const filters = {
     categories: availableFilters?.categories || [
+      "OPEN",
       'GENERAL',
       'EWS',
      
       'OBC-NCL',
+      "OBC-NCL (PwD)",
      
       'SC',
+      "SC (PwD)",
       
       'ST',
+      "ST (PwD)",
+      
      
     ],
     genders: availableFilters?.genders || [
@@ -61,7 +66,7 @@ const FilterModalForRankWiseSearch = ({
       'Female-only',
       'Gender-neutral'
     ],
-    years: availableFilters?.years || [2026, 2025, 2024, 2023, 2022],
+    years: availableFilters?.years || [ 2025, 2024],
     rounds: availableFilters?.rounds || [1, 2, 3, 4, 5, 6, 7],
     branches: availableFilters?.branches || [
       'Computer Science and Engineering',
@@ -73,13 +78,13 @@ const FilterModalForRankWiseSearch = ({
       'Artificial Intelligence',
       'Data Science',
       'Chemical Engineering',
-      'Biotechnology',
+      // 'Biotechnology',
       'Aerospace Engineering',
-      'Automobile Engineering',
+      // 'Automobile Engineering',
       'Instrumentation Engineering',
-      'Production Engineering',
-      'Textile Engineering',
-      'Mining Engineering',
+      // 'Production Engineering',
+      // 'Textile Engineering',
+      // 'Mining Engineering',
       'Metallurgical Engineering'
     ],
     
