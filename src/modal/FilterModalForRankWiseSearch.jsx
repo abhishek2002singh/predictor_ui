@@ -48,13 +48,13 @@ const FilterModalForRankWiseSearch = ({
     categories: availableFilters?.categories || [
       'GENERAL',
       'EWS',
-      'GENERAL-PWD',
+     
       'OBC-NCL',
-      'OBC-NCL-PWD',
+     
       'SC',
-      'SC-PWD',
+      
       'ST',
-      'ST-PWD'
+     
     ],
     genders: availableFilters?.genders || [
       'Male',

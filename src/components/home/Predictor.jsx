@@ -146,24 +146,24 @@ const Predictor = () => {
       console.log("User data saved successfully:", userResult);
 
       if (userResult.success) {
-        showSuccess("Form submitted successfully! Redirecting to predictions...");
+        // showSuccess("Form submitted successfully! Redirecting to predictions...");
 
         // Navigate to predictions page with form data for API call
-        setTimeout(() => {
+        
           navigate('/predict-colleges', {
             state: {
               formData: {
                 rank: formattedData.rank,
                 typeOfExam: formattedData.examType,
-                year: undefined,
-                round: undefined,
-                branch: undefined,
-                institute: undefined,
-                quota: undefined
+                // year: undefined,
+                // round: undefined,
+                // branch: undefined,
+                // institute: undefined,
+                // quota: undefined
               }
             }
           });
-        }, 1500);
+       
       }
     } catch (error) {
       console.error("Form submission error:", error);
