@@ -25,6 +25,7 @@ class ApiClient {
     const config = {
       ...options,
       headers,
+      credentials: "include", // Include cookies in cross-origin requests
     };
 
     try {
@@ -162,6 +163,7 @@ put(endpoint, data, options = {}) {
           method: 'POST',
           headers: headers,
           body: formData,
+          credentials: "include",
         });
         
         if (!response.ok) {
@@ -180,5 +182,6 @@ put(endpoint, data, options = {}) {
 }
 
 // Create instance with base URL
-export const apiClient = new ApiClient("http://localhost:7777");
+const baseURL = import.meta.env.VITE_API_BASE_URL || "https://predictor-backend-yfl1.onrender.com";
+export const apiClient = new ApiClient(baseURL);
 export default apiClient;
