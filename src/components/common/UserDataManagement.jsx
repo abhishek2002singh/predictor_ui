@@ -257,8 +257,8 @@ const handleExport = async (examType = "") => {
 
     // Local CSV export as fallback
     const headers = [
-      "Name", "Email", "Mobile", "Exam Type", "Rank", "Category",
-      "Gender", "State", "Checked At", "Total Checks", "Exams Checked",
+      "Name", "Email", "Mobile", "State", "City", "Exam Type", "Rank", "Category",
+      "Gender", "Checked At", "Total Checks", "Exams Checked",
       "Created At", "Updated At", "Negative Response", "Positive Response", "Data Export"
     ];
     
@@ -269,7 +269,9 @@ const handleExport = async (examType = "") => {
           `"${user.firstName || ''} ${user.lastName || ''}"`,
           user.emailId || '',
           user.mobileNumber,
-          check.examType,
+          user.homeState || '',
+          user.city || '',
+          check.examType || '',
           check.rank || '',
           check.category || '',
           check.gender || '',
@@ -347,6 +349,8 @@ const handleExport = async (examType = "") => {
       minute: "2-digit",
     });
   };
+
+  console.log(users);
 
   // If no permission, show access denied
   if (!canView) {
@@ -833,8 +837,8 @@ const handleExport = async (examType = "") => {
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                            {user?.firstName?.[0] && user?.lastName?.[0]
-                              ? `${user.firstName[0].toUpperCase()}${user.lastName[0].toUpperCase()}`
+                            {user?.firstName?.[0]
+                              ? `${user.firstName[0].toUpperCase()}`
                               : "NA"}
                           </div>
                           <div>
@@ -848,12 +852,20 @@ const handleExport = async (examType = "") => {
                         <div className="space-y-1">
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Mail className="h-4 w-4" />
-                            {user.emailId || 'N/A'}
+                            {user?.emailId || 'N/A'}
                           </div>
                           <div className="flex items-center gap-2 text-sm text-gray-600">
                             <Phone className="h-4 w-4" />
-                            {user.mobileNumber}
+                            {user?.mobileNumber}
                           </div>
+                          {user?.homeState && (
+                            <div className="flex items-center gap-2 text-sm text-gray-600">
+                              <svg className="h-4 w-4" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                              </svg>
+                              {user.homeState}{user?.city && `, ${user.city}`}
+                            </div>
+                          )}
                         </div>
                       </td>
                       <td className="px-6 py-4">
@@ -937,7 +949,7 @@ const handleExport = async (examType = "") => {
                   <div className="flex items-start justify-between">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                        {user.firstName?.[0]}{user.lastName?.[0]}
+                        {user?.firstName?.[0]}{user.lastName?.[0]}
                       </div>
                       <div>
                         <p className="font-medium text-gray-900">
@@ -1034,161 +1046,295 @@ const handleExport = async (examType = "") => {
       </div>
 
       {/* User Detail Modal */}
-      {selectedUser && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <motion.div
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-          >
-            <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-900">User Details</h2>
-              <button
-                onClick={() => setSelectedUser(null)}
-                className="p-2 hover:bg-gray-100 rounded-lg"
-              >
-                <X className="h-5 w-5" />
-              </button>
+    {/* User Detail Modal */}
+{selectedUser && (
+  <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
+    >
+      <div className="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-gray-900">User Details</h2>
+        <button
+          onClick={() => setSelectedUser(null)}
+          className="p-2 hover:bg-gray-100 rounded-lg"
+        >
+          <X className="h-5 w-5" />
+        </button>
+      </div>
+      <div className="p-6 space-y-6">
+        {/* User Info */}
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
+            {selectedUser.firstName?.[0]}{selectedUser.lastName?.[0]}
+          </div>
+          <div>
+            <h3 className="text-xl font-semibold text-gray-900">
+              {selectedUser.firstName || 'N/A'} {selectedUser.lastName || ''}
+            </h3>
+            <p className="text-gray-500">
+              <Mail className="inline h-4 w-4 mr-1" />
+              {selectedUser.emailId || 'No email'}
+            </p>
+            <p className="text-gray-500">
+              <Phone className="inline h-4 w-4 mr-1" />
+              {selectedUser.mobileNumber}
+            </p>
+            {selectedUser.homeState && (
+              <p className="text-gray-500">
+                <svg className="inline h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M5.05 4.05a7 7 0 119.9 9.9L10 18.9l-4.95-4.95a7 7 0 010-9.9zM10 11a2 2 0 100-4 2 2 0 000 4z" clipRule="evenodd" />
+                </svg>
+                {selectedUser.homeState}
+                {selectedUser.city && `, ${selectedUser.city}`}
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Stats Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-blue-50 rounded-xl p-4">
+            <p className="text-sm text-blue-600">Total Checks</p>
+            <p className="text-2xl font-bold text-blue-900">{selectedUser.totalChecks}</p>
+          </div>
+          <div className="bg-purple-50 rounded-xl p-4">
+            <p className="text-sm text-purple-600">Exams Checked</p>
+            <p className="text-2xl font-bold text-purple-900">{selectedUser.examsChecked?.length || 0}</p>
+          </div>
+          <div className="bg-green-50 rounded-xl p-4">
+            <p className="text-sm text-green-600">Last Active</p>
+            <p className="text-sm font-bold text-green-900">{formatDateTime(selectedUser.updatedAt)}</p>
+          </div>
+          <div className="bg-red-50 rounded-xl p-4">
+            <p className="text-sm text-red-600">Registered</p>
+            <p className="text-sm font-bold text-red-900">{formatDate(selectedUser.createdAt)}</p>
+          </div>
+        </div>
+
+        {/* Status Badges */}
+        <div>
+          <h4 className="font-medium text-gray-900 mb-2">User Status</h4>
+          <div className="flex flex-wrap gap-2">
+            {selectedUser.isNegativeResponse && (
+              <span className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-medium flex items-center gap-1">
+                <XCircle className="h-4 w-4" /> Negative Response
+              </span>
+            )}
+            {selectedUser.isPositiveResponse && (
+              <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-sm font-medium flex items-center gap-1">
+                <CheckCircle className="h-4 w-4" /> Positive Response
+              </span>
+            )}
+            {selectedUser.isDataExport && (
+              <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium flex items-center gap-1">
+                <FileDown className="h-4 w-4" /> Data Exported
+              </span>
+            )}
+            {selectedUser.isCheckData && (
+              <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium flex items-center gap-1">
+                <FileText className="h-4 w-4" /> Check Data
+              </span>
+            )}
+            {!selectedUser.isNegativeResponse && !selectedUser.isPositiveResponse && !selectedUser.isDataExport && !selectedUser.isCheckData && (
+              <span className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">
+                No status set
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Exams Checked */}
+        {selectedUser.examsChecked?.length > 0 && (
+          <div>
+            <h4 className="font-medium text-gray-900 mb-2">Exams Checked</h4>
+            <div className="flex flex-wrap gap-2">
+              {selectedUser.examsChecked.map((exam) => (
+                <span
+                  key={exam}
+                  className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
+                >
+                  {exam}
+                </span>
+              ))}
             </div>
-            <div className="p-6 space-y-6">
-              {/* User Info */}
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-xl">
-                  {selectedUser.firstName?.[0]}{selectedUser.lastName?.[0]}
-                </div>
-                <div>
-                  <h3 className="text-xl font-semibold text-gray-900">
-                    {selectedUser.firstName || 'N/A'} {selectedUser.lastName || ''}
-                  </h3>
-                  <p className="text-gray-500">{selectedUser.emailId || 'No email'}</p>
-                  <p className="text-gray-500">{selectedUser.mobileNumber}</p>
-                </div>
-              </div>
+          </div>
+        )}
 
-              {/* Stats Grid */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                <div className="bg-blue-50 rounded-xl p-4">
-                  <p className="text-sm text-blue-600">Total Checks</p>
-                  <p className="text-2xl font-bold text-blue-900">{selectedUser.totalChecks}</p>
-                </div>
-                <div className="bg-purple-50 rounded-xl p-4">
-                  <p className="text-sm text-purple-600">Exams Checked</p>
-                  <p className="text-2xl font-bold text-purple-900">{selectedUser.examsChecked?.length || 0}</p>
-                </div>
-                <div className="bg-green-50 rounded-xl p-4">
-                  <p className="text-sm text-green-600">Last Active</p>
-                  <p className="text-sm font-bold text-green-900">{formatDateTime(selectedUser.updatedAt)}</p>
-                </div>
-                <div className="bg-red-50 rounded-xl p-4">
-                  <p className="text-sm text-red-600">Registered</p>
-                  <p className="text-sm font-bold text-red-900">{formatDate(selectedUser.createdAt)}</p>
-                </div>
-              </div>
-
-              {/* Status Badges */}
-              <div>
-                <h4 className="font-medium text-gray-900 mb-2">User Status</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedUser.isNegativeResponse && (
-                    <span className="px-3 py-1.5 bg-red-100 text-red-700 rounded-lg text-sm font-medium flex items-center gap-1">
-                      <XCircle className="h-4 w-4" /> Negative Response
-                    </span>
-                  )}
-                  {selectedUser.isPositiveResponse && (
-                    <span className="px-3 py-1.5 bg-green-100 text-green-700 rounded-lg text-sm font-medium flex items-center gap-1">
-                      <CheckCircle className="h-4 w-4" /> Positive Response
-                    </span>
-                  )}
-                  {selectedUser.isDataExport && (
-                    <span className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-lg text-sm font-medium flex items-center gap-1">
-                      <FileDown className="h-4 w-4" /> Data Exported
-                    </span>
-                  )}
-                  {selectedUser.isCheckData && (
-                    <span className="px-3 py-1.5 bg-blue-100 text-blue-700 rounded-lg text-sm font-medium flex items-center gap-1">
-                      <FileText className="h-4 w-4" /> Check Data
-                    </span>
-                  )}
-                  {!selectedUser.isNegativeResponse && !selectedUser.isPositiveResponse && !selectedUser.isDataExport && !selectedUser.isCheckData && (
-                    <span className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium">
-                      No status set
-                    </span>
-                  )}
-                </div>
-              </div>
-
-              {/* Exams Checked */}
-              {selectedUser.examsChecked?.length > 0 && (
-                <div>
-                  <h4 className="font-medium text-gray-900 mb-2">Exams Checked</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedUser.examsChecked.map((exam) => (
-                      <span
-                        key={exam}
-                        className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-lg text-sm font-medium"
-                      >
-                        {exam}
+        {/* Check History - UPDATED TO HANDLE ALL TYPES */}
+        {selectedUser.checkHistory?.length > 0 && (
+          <div>
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-medium text-gray-900">Check History</h4>
+              <span className="text-sm text-gray-500">{selectedUser.checkHistory.length} total checks</span>
+            </div>
+            <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+              {selectedUser.checkHistory.slice().reverse().map((check, idx) => (
+                <div
+                  key={check._id || idx}
+                  className="bg-gray-50 rounded-lg p-4 border border-gray-100 hover:bg-gray-100 transition-colors"
+                >
+                  <div className="flex flex-wrap items-center justify-between mb-3 gap-2">
+                    {/* Show Exam Type if exists */}
+                    {check.examType ? (
+                      <span className="px-3 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                        {check.examType}
                       </span>
-                    ))}
+                    ) : (
+                      <span className="px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-xs font-medium">
+                        No Exam Type
+                      </span>
+                    )}
+                    
+                    <span className="text-xs text-gray-500 font-medium">
+                      {formatDateTime(check.checkedAt)}
+                    </span>
+                    
+                    {/* Show Lead Source */}
+                    {check.gainLeedFrom && Array.isArray(check.gainLeedFrom) && check.gainLeedFrom.length > 0 && (
+                      <div className="flex flex-wrap gap-1">
+                        {check.gainLeedFrom.map((leed, leedIdx) => (
+                          <span 
+                            key={leedIdx} 
+                            className={`px-2 py-1 rounded text-xs font-medium ${
+                              leed === "FROM_STUDENT_RANK" 
+                                ? "bg-green-100 text-green-700" 
+                                : "bg-orange-100 text-orange-700"
+                            }`}
+                          >
+                            {leed === "FROM_STUDENT_RANK" ? "Rank Check" : "College Search"}
+                          </span>
+                        ))}
+                      </div>
+                    )}
                   </div>
-                </div>
-              )}
-
-              {/* Check History */}
-              {selectedUser.checkHistory?.length > 0 && (
-                <div>
-                  <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-medium text-gray-900">Recent Check History</h4>
-                    <span className="text-sm text-gray-500">{selectedUser.checkHistory.length} total checks</span>
-                  </div>
-                  <div className="space-y-3 max-h-60 overflow-y-auto">
-                    {selectedUser.checkHistory.slice(-10).reverse().map((check, idx) => (
-                      <div
-                        key={idx}
-                        className="bg-gray-50 rounded-lg p-3 border border-gray-100"
-                      >
-                        <div className="flex items-center justify-between mb-2">
-                          <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-                            {check.examType}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {formatDateTime(check.checkedAt)}
-                          </span>
-                          {check?.gainLeedFrom?.map((leed)=>(
-                            <div>
-                              <span className="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-xs font-medium">
-                            {leed}
-                          </span>
-                            </div>
-                          ))}
+                  
+                  {/* Show Different Info Based on Check Type */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                    {/* For Rank Checks */}
+                    {check.examType && check.rank && (
+                      <>
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Rank</p>
+                          <p className="font-semibold text-gray-900">{check.rank.toLocaleString()}</p>
                         </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                          <div>
-                            <span className="text-gray-500">Rank:</span>{" "}
-                            <span className="font-medium">{check.rank}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">Category:</span>{" "}
-                            <span className="font-medium">{check.category}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">Gender:</span>{" "}
-                            <span className="font-medium">{check.gender}</span>
-                          </div>
-                          <div>
-                            <span className="text-gray-500">State:</span>{" "}
-                            <span className="font-medium">{check.homeState}</span>
-                          </div>
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Exam Type</p>
+                          <p className="font-semibold text-gray-900">{check.examType}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Type</p>
+                          <p className="font-semibold text-green-600">Rank Prediction</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Checked At</p>
+                          <p className="font-semibold text-gray-900">{formatDate(check.checkedAt)}</p>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* For College Searches */}
+                    {(!check.examType || !check.rank) && check.gainLeedFrom?.includes("FROM_COLLEGE_SEARCH") && (
+                      <>
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Activity Type</p>
+                          <p className="font-semibold text-orange-600">College Search</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Date</p>
+                          <p className="font-semibold text-gray-900">{formatDate(check.checkedAt)}</p>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Time</p>
+                          <p className="font-semibold text-gray-900">
+                            {new Date(check.checkedAt).toLocaleTimeString("en-IN", {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Source</p>
+                          <p className="font-semibold text-gray-900">College Finder</p>
+                        </div>
+                      </>
+                    )}
+                    
+                    {/* For Other Types */}
+                    {(!check.examType && !check.gainLeedFrom?.includes("FROM_COLLEGE_SEARCH")) && (
+                      <div className="col-span-full">
+                        <div className="bg-white p-3 rounded-lg border">
+                          <p className="text-xs text-gray-500 mb-1">Activity</p>
+                          <p className="font-semibold text-gray-900">General Check</p>
+                          <p className="text-xs text-gray-500 mt-1">
+                            Checked on {formatDateTime(check.checkedAt)}
+                          </p>
                         </div>
                       </div>
-                    ))}
+                    )}
                   </div>
+                  
+                  {/* Additional Info if available */}
+                  {(check.category || check.gender || check.homeState) && (
+                    <div className="mt-3 pt-3 border-t border-gray-200">
+                      <p className="text-xs text-gray-500 mb-2">Additional Info:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {check.category && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                            Category: {check.category}
+                          </span>
+                        )}
+                        {check.gender && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                            Gender: {check.gender}
+                          </span>
+                        )}
+                        {check.homeState && (
+                          <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">
+                            State: {check.homeState}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              )}
+              ))}
             </div>
-          </motion.div>
-        </div>
-      )}
+            
+            {/* Summary */}
+            <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+              <div className="flex flex-wrap gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-green-500"></div>
+                  <span className="text-gray-700">
+                    Rank Checks: {selectedUser.checkHistory.filter(ch => ch.examType && ch.rank).length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                  <span className="text-gray-700">
+                    College Searches: {selectedUser.checkHistory.filter(ch => 
+                      ch.gainLeedFrom?.includes("FROM_COLLEGE_SEARCH") && !ch.examType
+                    ).length}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-3 h-3 rounded-full bg-blue-500"></div>
+                  <span className="text-gray-700">
+                    Other Activities: {selectedUser.checkHistory.filter(ch => 
+                      !ch.examType && !ch.gainLeedFrom?.includes("FROM_COLLEGE_SEARCH")
+                    ).length}
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    </motion.div>
+  </div>
+)}
 
       {/* Edit User Modal */}
       {editingUser && canUpdate && (

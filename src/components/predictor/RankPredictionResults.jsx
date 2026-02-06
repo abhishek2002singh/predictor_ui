@@ -24,8 +24,10 @@ const RankPredictionResults = () => {
   const [userDetails, setUserDetails] = useState({
     firstName: '',
     lastName: '',
+    homeState: '',
     mobileNumber: '',
-    emailId: ''
+    emailId: '',
+    city: ''
   });
   const [formErrors, setFormErrors] = useState({});
 
@@ -105,7 +107,8 @@ const RankPredictionResults = () => {
     // Validation
     const errors = {};
     if (!userDetails.firstName.trim()) errors.firstName = 'First name is required';
-    if (!userDetails.lastName.trim()) errors.lastName = 'Last name is required';
+    if (!userDetails.homeState.trim()) errors.homeState = 'Home state is required';
+    if(!userDetails.city.trim()) errors.city = 'City is required';
     if (!userDetails.emailId?.trim()) {
       errors.emailId = "Email is required";
     }
@@ -121,8 +124,9 @@ const RankPredictionResults = () => {
       const userDataPayload = {
         mobileNumber: userDetails.mobileNumber,
         firstName: userDetails.firstName,
-        lastName: userDetails.lastName,
         emailId: userDetails.emailId,
+        city: userDetails.city,
+        homeState: userDetails.homeState,
       };
 
       const result = await dispatch(submitUserDetails(userDataPayload)).unwrap();
@@ -132,9 +136,12 @@ const RankPredictionResults = () => {
       setShowUserDetailsModal(false);
       setUserDetails({
         firstName: '',
-        lastName: '',
+       
         mobileNumber: '',
-        emailId: ''
+        emailId: '',
+        city: '',
+        homeState: '',
+
       });
       setFormErrors({});
       toast.success('Details submitted successfully! Showing all data.');
@@ -993,7 +1000,7 @@ const RankPredictionResults = () => {
                 </div>
 
                 {/* Last Name */}
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Last Name
                   </label>
@@ -1010,7 +1017,7 @@ const RankPredictionResults = () => {
                   {formErrors.lastName && (
                     <p className="mt-1 text-xs sm:text-sm text-red-500">{formErrors.lastName}</p>
                   )}
-                </div>
+                </div> */}
 
                 {/* Email */}
                 <div>
@@ -1050,6 +1057,46 @@ const RankPredictionResults = () => {
                   />
                   {formErrors.mobileNumber && (
                     <p className="mt-1 text-xs sm:text-sm text-red-500">{formErrors.mobileNumber}</p>
+                  )}
+                </div>
+
+                {/* State */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    State*
+                  </label>
+                  <input
+                    type="text"
+                    value={userDetails?.homeState}
+                    onChange={(e) => setUserDetails({ ...userDetails, homeState: e.target.value })}
+                    className={`w-full px-4 py-2.5 sm:py-3 border rounded-lg outline-none transition-colors text-sm sm:text-base ${formErrors.homeState
+                        ? 'border-red-500'
+                        : 'border-gray-300 hover:border-gray-400 focus:border-blue-500'
+                      }`}
+                    placeholder="Enter your state"
+                  />
+                  {formErrors.homeState && (
+                    <p className="mt-1 text-xs sm:text-sm text-red-500">{formErrors.homeState}</p>
+                  )}
+                </div>
+
+                {/* City */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    City*
+                  </label>
+                  <input
+                    type="text"
+                    value={userDetails.city}
+                    onChange={(e) => setUserDetails({ ...userDetails, city: e.target.value })}
+                    className={`w-full px-4 py-2.5 sm:py-3 border rounded-lg outline-none transition-colors text-sm sm:text-base ${formErrors.city
+                        ? 'border-red-500'
+                        : 'border-gray-300 hover:border-gray-400 focus:border-blue-500'
+                      }`}
+                    placeholder="Enter your city"
+                  />
+                  {formErrors.city && (
+                    <p className="mt-1 text-xs sm:text-sm text-red-500">{formErrors.city}</p>
                   )}
                 </div>
 
